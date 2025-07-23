@@ -49,7 +49,7 @@ const router = createRouter({
 })
 
 // Global navigation guard
-router.beforeEach(async (to, from, next) => {
+router.beforeEach(async (to, _from, next) => {
   const authStore = useAuthStore()
 
   // Update document title

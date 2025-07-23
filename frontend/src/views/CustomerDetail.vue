@@ -211,7 +211,7 @@ import { useCustomerStore } from '@/stores/customer'
 import CustomerFormModal from '@/components/CustomerFormModal.vue'
 import TrackingTimeline from '@/components/TrackingTimeline.vue'
 import TrackFormModal from '@/components/TrackFormModal.vue'
-import type { Customer, NextAction } from '@/types'
+import type { NextAction } from '@/types'
 
 const route = useRoute()
 const router = useRouter()
