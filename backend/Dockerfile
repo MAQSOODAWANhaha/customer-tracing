@@ -24,17 +24,12 @@ WORKDIR /app
 # 复制 Cargo 文件
 COPY Cargo.toml Cargo.lock ./
 
-# 创建一个虚拟的 main.rs 来预编译依赖
-RUN mkdir src && echo "fn main() {}" > src/main.rs
-RUN cargo build --release
-RUN rm src/main.rs
-
-# 复制源代码
+# 复制源代码和迁移文件
 COPY src ./src
 COPY migrations ./migrations
 
 # 构建应用
-RUN touch src/main.rs && cargo build --release
+RUN cargo build --release
 
 # 运行阶段
 FROM docker.m.daocloud.io/debian:bookworm-slim
