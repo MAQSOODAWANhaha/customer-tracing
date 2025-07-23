@@ -12,12 +12,12 @@ pub async fn create_database_connection(database_url: &str) -> Result<Database, 
         .idle_timeout(Duration::from_secs(8))
         .max_lifetime(Duration::from_secs(8))
         .sqlx_logging(true)
-        .sqlx_logging_level(log::LevelFilter::Info);
+        .sqlx_logging_level(tracing::log::LevelFilter::Info);
 
     SeaDatabase::connect(opt).await
 }
 
-pub async fn run_migrations(db: &Database) -> Result<(), DbErr> {
+pub async fn run_migrations(_db: &Database) -> Result<(), DbErr> {
     // For now, we'll handle migrations manually with the CLI
     // In a production setup, you might want to use sea-orm-migration
     tracing::info!("Database migrations should be run manually using CLI commands");

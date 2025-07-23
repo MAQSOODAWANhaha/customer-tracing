@@ -3,6 +3,7 @@ use customer_tracker::{
     config::Config,
     database::create_database_connection,
     handlers::auth::AppState,
+    migration::run_database_migrations,
     routes::create_routes,
 };
 use clap::Parser;
@@ -46,6 +47,11 @@ async fn start_server(port: u16, host: String) -> Result<(), Box<dyn std::error:
     // Load configuration
     let config = Config::from_env()?;
     info!("Configuration loaded successfully");
+
+    // Run database migrations
+    info!("Running database migrations...");
+    run_database_migrations().await?;
+    info!("Database migrations completed");
 
     // Create database connection
     let db = create_database_connection(&config.database_url).await?;

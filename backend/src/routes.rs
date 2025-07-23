@@ -1,6 +1,6 @@
 use axum::{
     middleware,
-    routing::{get, post, put, delete},
+    routing::{get, post, put},
     Router,
 };
 use tower_http::{
@@ -32,18 +32,18 @@ pub fn create_routes(app_state: AppState) -> Router {
             get(customer::list_customers)
             .post(customer::create_customer)
         )
-        .route("/api/customers/:id", 
+        .route("/api/customers/{id}", 
             get(customer::get_customer)
             .put(customer::update_customer)
             .delete(customer::delete_customer)
         )
         
         // Customer tracking routes
-        .route("/api/customers/:id/tracks", 
+        .route("/api/customers/{id}/tracks", 
             get(customer_track::list_customer_tracks)
             .post(customer_track::create_customer_track)
         )
-        .route("/api/tracks/:id", 
+        .route("/api/tracks/{id}", 
             put(customer_track::update_customer_track)
             .delete(customer_track::delete_customer_track)
         )
@@ -51,7 +51,7 @@ pub fn create_routes(app_state: AppState) -> Router {
         
         .layer(middleware::from_fn_with_state(
             app_state.clone(), 
-            auth_middleware
+            auth_middleware::<AppState>
         ))
         .with_state(app_state.clone());
 
@@ -63,7 +63,7 @@ pub fn create_routes(app_state: AppState) -> Router {
         .fallback_service(ServeDir::new("dist")) // Serve static files
 }
 
-fn create_cors_layer(app_state: &AppState) -> CorsLayer {
+fn create_cors_layer(_app_state: &AppState) -> CorsLayer {
     // In production, you should be more restrictive with CORS
     CorsLayer::new()
         .allow_origin(Any) // Configure this based on your environment

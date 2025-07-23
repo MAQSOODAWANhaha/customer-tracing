@@ -6,7 +6,7 @@ use axum::{
 };
 use chrono::Utc;
 use sea_orm::{
-    ActiveModelTrait, ColumnTrait, DatabaseConnection, EntityTrait, PaginatorTrait,
+    ActiveModelTrait, ColumnTrait, EntityTrait, PaginatorTrait,
     QueryFilter, QueryOrder, Set,
 };
 use serde::{Deserialize, Serialize};
@@ -14,7 +14,6 @@ use serde::{Deserialize, Serialize};
 use crate::{
     entities::{
         customer::{self, Entity as Customer, CreateCustomerRequest, UpdateCustomerRequest},
-        customer_track::{self, Entity as CustomerTrack},
         next_action::NextAction,
     },
     middleware::auth::CurrentUser,
@@ -68,6 +67,8 @@ pub async fn list_customers(
         query = query.filter(
             customer::Column::Name.contains(search_term)
                 .or(customer::Column::Phone.contains(search_term))
+                .or(customer::Column::Email.contains(search_term))
+                .or(customer::Column::Company.contains(search_term))
         );
     }
 
@@ -136,6 +137,8 @@ pub async fn create_customer(
     let customer = customer::ActiveModel {
         name: Set(req.name),
         phone: Set(req.phone),
+        email: Set(req.email),
+        company: Set(req.company),
         address: Set(req.address),
         notes: Set(req.notes),
         rate: Set(req.rate.unwrap_or(0)),
@@ -177,6 +180,12 @@ pub async fn update_customer(
     }
     if let Some(phone) = req.phone {
         customer_active.phone = Set(Some(phone));
+    }
+    if let Some(email) = req.email {
+        customer_active.email = Set(Some(email));
+    }
+    if let Some(company) = req.company {
+        customer_active.company = Set(Some(company));
     }
     if let Some(address) = req.address {
         customer_active.address = Set(Some(address));

@@ -1,5 +1,5 @@
 use clap::{Args, Parser, Subcommand};
-use sea_orm::{ActiveModelTrait, ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter, Set};
+use sea_orm::{ActiveModelTrait, ColumnTrait, DatabaseConnection, EntityTrait, PaginatorTrait, QueryFilter, QuerySelect, Set};
 use chrono::Utc;
 use uuid::Uuid;
 
@@ -7,6 +7,7 @@ use crate::{
     config::Config,
     database::create_database_connection,
     entities::{user, user::Entity as User},
+    migration::{run_database_migrations, check_database_status},
     utils::password::hash_password,
 };
 
@@ -106,8 +107,17 @@ pub async fn handle_cli_command(cli: Cli) -> Result<(), Box<dyn std::error::Erro
 }
 
 async fn handle_user_command(args: UserArgs) -> Result<(), Box<dyn std::error::Error>> {
+    // 如果数据库不存在，先运行迁移
     let config = Config::from_env()?;
-    let db = create_database_connection(&config.database_url).await?;
+    let db_url = &config.database_url;
+    
+    // 确保数据库和表存在
+    use crate::migration::DatabaseMigrator;
+    let migrator = DatabaseMigrator::new(db_url.clone());
+    migrator.ensure_database_exists().await?;
+    migrator.run_migrations().await?;
+    
+    let db = create_database_connection(db_url).await?;
 
     match args.action {
         UserAction::Create { username, password, name } => {
@@ -245,16 +255,24 @@ async fn toggle_user_status(
 async fn handle_database_command(args: DatabaseArgs) -> Result<(), Box<dyn std::error::Error>> {
     match args.action {
         DatabaseAction::Migrate => {
-            println!("数据库迁移功能暂未实现");
-            println!("请手动执行SQL迁移文件: migrations/*.sql");
+            println!("开始执行数据库迁移...");
+            run_database_migrations().await?;
+            println!("数据库迁移完成");
         }
         DatabaseAction::Status => {
-            let config = Config::from_env()?;
-            let db = create_database_connection(&config.database_url).await?;
+            check_database_status().await?;
             
-            let user_count = User::find().count(&db).await?;
-            println!("数据库连接: 正常");
-            println!("用户总数: {}", user_count);
+            // 额外显示用户统计（仅在表存在时）
+            let config = Config::from_env()?;
+            match create_database_connection(&config.database_url).await {
+                Ok(db) => {
+                    match User::find().count(&db).await {
+                        Ok(count) => println!("用户总数: {}", count),
+                        Err(_) => println!("用户表尚未创建"),
+                    }
+                }
+                Err(e) => println!("数据库连接失败: {}", e),
+            }
         }
     }
 

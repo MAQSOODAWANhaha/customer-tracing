@@ -4,6 +4,7 @@ pub mod database;
 pub mod entities;
 pub mod handlers;
 pub mod middleware;
+pub mod migration;
 pub mod routes;
 pub mod services;
 pub mod utils;
