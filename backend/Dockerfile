@@ -1,5 +1,5 @@
 # 多阶段构建 - 构建阶段
-FROM docker.m.daocloud.io/rust:1.75-slim as builder
+FROM docker.m.daocloud.io/rust:1.88.0-slim as builder
 
 # 配置中国镜像源
 RUN sed -i 's/deb.debian.org/mirrors.ustc.edu.cn/g' /etc/apt/sources.list.d/debian.sources && \
