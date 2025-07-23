@@ -1,7 +1,11 @@
 # 多阶段构建 - 构建阶段
-FROM node:18-alpine as builder
+FROM docker.m.daocloud.io/node:18-alpine as builder
 
 WORKDIR /app
+
+# 配置 npm 中国镜像源
+RUN npm config set registry https://registry.npmmirror.com && \
+    npm config set cache /tmp/.npm
 
 # 复制 package 文件
 COPY package*.json ./
@@ -22,7 +26,7 @@ ENV VITE_TOKEN_STORAGE_KEY=$VITE_TOKEN_STORAGE_KEY
 RUN npm run build
 
 # 运行阶段 - 使用 nginx 提供静态文件服务
-FROM nginx:alpine
+FROM docker.m.daocloud.io/nginx:alpine
 
 # 复制构建产物
 COPY --from=builder /app/dist /usr/share/nginx/html

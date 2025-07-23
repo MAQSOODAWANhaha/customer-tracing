@@ -67,7 +67,7 @@ services:
 
   # Nginx 反向代理 (生产环境)
   nginx:
-    image: nginx:alpine
+    image: docker.m.daocloud.io/nginx:alpine
     container_name: customer-tracker-nginx-prod
     restart: always
     ports:

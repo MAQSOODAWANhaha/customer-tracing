@@ -1,5 +1,9 @@
 # 多阶段构建 - 构建阶段
-FROM rust:1.75-slim as builder
+FROM docker.m.daocloud.io/rust:1.75-slim as builder
+
+# 配置中国镜像源
+RUN sed -i 's/deb.debian.org/mirrors.ustc.edu.cn/g' /etc/apt/sources.list.d/debian.sources && \
+    sed -i 's/security.debian.org/mirrors.ustc.edu.cn/g' /etc/apt/sources.list.d/debian.sources
 
 # 安装构建依赖
 RUN apt-get update && apt-get install -y \
@@ -7,6 +11,13 @@ RUN apt-get update && apt-get install -y \
     libssl-dev \
     sqlite3 \
     && rm -rf /var/lib/apt/lists/*
+
+# 配置 Rust 中国镜像源
+RUN mkdir -p ~/.cargo && \
+    echo '[source.crates-io]' > ~/.cargo/config.toml && \
+    echo 'replace-with = "ustc"' >> ~/.cargo/config.toml && \
+    echo '[source.ustc]' >> ~/.cargo/config.toml && \
+    echo 'registry = "sparse+https://mirrors.ustc.edu.cn/crates.io-index/"' >> ~/.cargo/config.toml
 
 WORKDIR /app
 
@@ -26,7 +37,11 @@ COPY migrations ./migrations
 RUN touch src/main.rs && cargo build --release
 
 # 运行阶段
-FROM debian:bookworm-slim
+FROM docker.m.daocloud.io/debian:bookworm-slim
+
+# 配置中国镜像源
+RUN sed -i 's/deb.debian.org/mirrors.ustc.edu.cn/g' /etc/apt/sources.list.d/debian.sources && \
+    sed -i 's/security.debian.org/mirrors.ustc.edu.cn/g' /etc/apt/sources.list.d/debian.sources
 
 # 安装运行时依赖
 RUN apt-get update && apt-get install -y \
