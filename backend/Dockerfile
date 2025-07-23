@@ -32,14 +32,13 @@ FROM debian:bookworm-slim
 RUN apt-get update && apt-get install -y \
     ca-certificates \
     sqlite3 \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
 # 从构建阶段复制二进制文件
-COPY --from=builder /app/target/release/customer-tracker /usr/local/bin/customer-tracker
-COPY --from=builder /app/target/release/migrate /usr/local/bin/migrate
-COPY --from=builder /app/target/release/cli /usr/local/bin/cli
+COPY --from=builder /app/target/release/customer-tracker /app/customer-tracker
 
 # 复制迁移文件
 COPY migrations ./migrations
@@ -60,11 +59,11 @@ EXPOSE 3000
 RUN echo '#!/bin/bash\n\
 set -e\n\
 echo "Running database migrations..."\n\
-migrate\n\
+/app/customer-tracker database migrate\n\
 echo "Creating default admin user if not exists..."\n\
-cli create-user admin admin123 "管理员" 2>/dev/null || echo "Admin user already exists"\n\
+/app/customer-tracker user create -u admin -p admin123 -n "管理员" 2>/dev/null || echo "Admin user already exists"\n\
 echo "Starting server..."\n\
-exec customer-tracker' > /usr/local/bin/start.sh
+exec /app/customer-tracker server start --port 3000 --host 0.0.0.0' > /usr/local/bin/start.sh
 
 RUN chmod +x /usr/local/bin/start.sh
 

@@ -14,6 +14,7 @@ use serde::{Deserialize, Serialize};
 use crate::{
     entities::{
         customer::{self, Entity as Customer, CreateCustomerRequest, UpdateCustomerRequest},
+        customer_track::{self, Entity as CustomerTrack},
         next_action::NextAction,
     },
     middleware::auth::CurrentUser,
@@ -51,6 +52,25 @@ pub struct CustomerWithLatestTrack {
     pub latest_next_action: Option<NextAction>,
     pub latest_content: Option<String>,
     pub created_at: chrono::DateTime<chrono::Utc>,
+}
+
+#[derive(Debug, Serialize)]
+pub struct CustomerDetailResponse {
+    pub id: i32,
+    pub name: String,
+    pub phone: Option<String>,
+    pub email: Option<String>,
+    pub company: Option<String>,
+    pub address: Option<String>,
+    pub notes: Option<String>,
+    pub rate: i32,
+    pub user_id: i32,
+    pub next_action: NextAction,
+    pub track_count: i64,
+    pub last_track_at: Option<chrono::DateTime<chrono::Utc>>,
+    pub created_at: chrono::DateTime<chrono::Utc>,
+    pub updated_at: chrono::DateTime<chrono::Utc>,
+    pub is_deleted: bool,
 }
 
 pub async fn list_customers(
@@ -115,7 +135,7 @@ pub async fn get_customer(
     Extension(current_user): Extension<CurrentUser>,
     Path(customer_id): Path<i32>,
     State(app_state): State<AppState>,
-) -> Result<Json<customer::Model>, StatusCode> {
+) -> Result<Json<CustomerDetailResponse>, StatusCode> {
     let customer = Customer::find_by_id(customer_id)
         .filter(customer::Column::UserId.eq(current_user.id))
         .filter(customer::Column::IsDeleted.eq(false))
@@ -124,7 +144,46 @@ pub async fn get_customer(
         .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?
         .ok_or(StatusCode::NOT_FOUND)?;
 
-    Ok(Json(customer))
+    // Get track count
+    let track_count = CustomerTrack::find()
+        .filter(customer_track::Column::CustomerId.eq(customer_id))
+        .count(&app_state.db)
+        .await
+        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+
+    // Get latest track to determine next_action and last_track_at
+    let latest_track = CustomerTrack::find()
+        .filter(customer_track::Column::CustomerId.eq(customer_id))
+        .order_by_desc(customer_track::Column::TrackTime)
+        .one(&app_state.db)
+        .await
+        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+
+    let (next_action, last_track_at) = if let Some(track) = latest_track {
+        (track.next_action, Some(track.track_time))
+    } else {
+        (NextAction::Continue, None) // Default action for customers without tracks
+    };
+
+    let response = CustomerDetailResponse {
+        id: customer.id,
+        name: customer.name,
+        phone: customer.phone,
+        email: customer.email,
+        company: customer.company,
+        address: customer.address,
+        notes: customer.notes,
+        rate: customer.rate,
+        user_id: customer.user_id,
+        next_action,
+        track_count: track_count as i64,
+        last_track_at,
+        created_at: customer.created_at,
+        updated_at: customer.updated_at,
+        is_deleted: customer.is_deleted,
+    };
+
+    Ok(Json(response))
 }
 
 pub async fn create_customer(

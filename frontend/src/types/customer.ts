@@ -8,6 +8,7 @@ export interface Customer {
   company?: string
   address?: string
   notes?: string
+  rate: number
   next_action: NextAction
   user_id: number
   track_count?: number
