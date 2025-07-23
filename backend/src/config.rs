@@ -18,7 +18,7 @@ impl Config {
         
         Ok(Config {
             database_url: env::var("DATABASE_URL")
-                .unwrap_or_else(|_| "sqlite://./customer_tracker.db".to_string()),
+                .unwrap_or_else(|_| "sqlite://./data/customer_tracker.db".to_string()),
             jwt_secret: env::var("JWT_SECRET")
                 .map_err(|_| "JWT_SECRET environment variable is required")?,
             jwt_expire_hours: env::var("JWT_EXPIRE_HOURS")

@@ -11,12 +11,14 @@
 - **框架**: Axum 0.8.x
 - **数据库**: SQLite + Sea-ORM
 - **认证**: JWT Token
+- **配置**: .env 环境变量
 
 ### 前端
 - **框架**: Vue 3 + TypeScript
 - **UI库**: Naive UI
 - **状态管理**: Pinia
 - **路由**: Vue Router 4
+- **配置**: .env 环境变量
 
 ## 📦 快速启动
 
@@ -29,27 +31,69 @@ cargo --version
 npm --version
 ```
 
-### 2. 一键启动
+### 2. 环境变量配置（重要！）
+
+系统已自带 `.env` 配置文件，**无需手动配置环境变量**。
+
+#### 后端配置 (`backend/.env`)
+```bash
+# 数据库配置（自动创建 ./data/ 目录）
+DATABASE_URL=sqlite://./data/customer_tracker.db
+
+# JWT配置（生产环境请修改）
+JWT_SECRET=your-secret-key-change-this-in-production
+JWT_EXPIRE_HOURS=24
+
+# 服务器配置
+SERVER_HOST=0.0.0.0
+SERVER_PORT=3000
+
+# CORS配置
+CORS_ORIGIN=http://localhost:5173
+
+# 日志级别
+LOG_LEVEL=info
+```
+
+#### 前端配置 (`frontend/.env`)
+```bash
+# API配置
+VITE_API_BASE_URL=http://localhost:3000
+
+# 应用配置
+VITE_APP_TITLE=客户追踪系统
+VITE_APP_VERSION=1.0.0
+
+# 开发配置
+VITE_DEV_PORT=5173
+```
+
+### 3. 一键启动（推荐）
 ```bash
 # 进入项目目录
 cd customer-tracing
 
-# 使用开发脚本启动（推荐）
+# 使用开发脚本启动
 ./start-dev.sh
 ```
 
-### 3. 手动启动
+### 4. 手动启动
 
 #### 启动后端
 ```bash
 cd backend
 
-# 初始化数据库和创建默认用户
-cargo run --bin migrate
-cargo run --bin cli -- create-user admin admin123 "管理员"
+# 生成安全的JWT密钥（可选，已有默认值）
+cargo run -- server generate-jwt-secret
+
+# 初始化数据库
+cargo run -- database migrate
+
+# 创建默认用户
+cargo run -- user create -u admin -p admin123 -n "管理员"
 
 # 启动后端服务
-cargo run
+cargo run -- server start --port 3000
 ```
 
 #### 启动前端
@@ -130,16 +174,41 @@ customer-tracing/
 
 ## 🔧 开发指南
 
-### 添加新用户
+### CLI管理工具
+
+所有命令都通过统一的CLI工具执行：
+
+#### 用户管理
 ```bash
-cd backend
-cargo run --bin cli -- create-user <username> <password> <name>
+# 创建新用户  
+cargo run -- user create -u <username> -p <password> -n <name>
+
+# 列出所有用户
+cargo run -- user list
+
+# 重置用户密码
+cargo run -- user reset-password -u <username> -p <new_password>
+
+# 禁用/启用用户
+cargo run -- user toggle -u <username>
 ```
 
-### 数据库迁移
+#### 数据库管理
 ```bash
-cd backend
-cargo run --bin migrate
+# 运行数据库迁移
+cargo run -- database migrate
+
+# 查看数据库状态
+cargo run -- database status
+```
+
+#### 服务器管理
+```bash
+# 启动服务器
+cargo run -- server start --port 3000
+
+# 生成JWT密钥
+cargo run -- server generate-jwt-secret
 ```
 
 ### 构建生产版本
@@ -156,8 +225,10 @@ npm run build
 ## 🐛 常见问题
 
 1. **端口冲突**: 确保 3000 和 5173 端口未被占用
-2. **数据库错误**: 删除 `data/customer_tracker.db` 后重新迁移
+2. **数据库错误**: 删除 `data/customer_tracker.db` 后运行 `cargo run -- database migrate`
 3. **依赖安装失败**: 检查网络连接，使用国内镜像源
+4. **JWT_SECRET错误**: 运行 `cargo run -- server generate-jwt-secret` 获取新密钥并更新 `.env` 文件
+5. **环境变量问题**: 确保 `backend/.env` 和 `frontend/.env` 文件存在且配置正确
 
 ## 📄 详细文档
 
