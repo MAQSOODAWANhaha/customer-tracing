@@ -135,7 +135,7 @@
     />
 
     <!-- 删除确认弹窗 -->
-    <n-modal v-model:show="showDeleteModal" preset="dialog" title="确认删除">
+    <n-modal v-model:show="showDeleteModal" preset="dialog" title="确认删除" class="delete-modal">
       <template #header>
         <div style="display: flex; align-items: center;">
           <n-icon :component="TrashOutline" color="#ff6b6b" size="20" style="margin-right: 8px;" />
@@ -519,6 +519,102 @@ onMounted(() => {
   
   .stats-text {
     font-size: 13px;
+  }
+}
+
+/* 删除确认弹窗移动端优化 */
+.delete-modal :deep(.n-dialog) {
+  border-radius: 12px;
+}
+
+.delete-modal :deep(.n-dialog__title) {
+  font-size: 18px;
+  font-weight: 600;
+  padding: 20px 24px 16px 24px;
+}
+
+.delete-modal :deep(.n-dialog__content) {
+  padding: 0 24px 16px 24px;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.delete-modal :deep(.n-dialog__action) {
+  padding: 16px 24px 24px 24px;
+}
+
+@media (max-width: 768px) {
+  .delete-modal {
+    margin: 16px;
+  }
+  
+  .delete-modal :deep(.n-dialog) {
+    border-radius: 12px;
+    max-width: none;
+    width: calc(100vw - 32px);
+  }
+
+  .delete-modal :deep(.n-dialog__title) {
+    padding: 20px 20px 16px 20px;
+    font-size: 18px;
+  }
+
+  .delete-modal :deep(.n-dialog__content) {
+    padding: 0 20px 16px 20px;
+    font-size: 16px;
+  }
+
+  .delete-modal :deep(.n-dialog__action) {
+    padding: 16px 20px 20px 20px;
+  }
+
+  /* 移动端按钮优化 */
+  .delete-modal :deep(.n-space) {
+    width: 100%;
+    justify-content: stretch;
+  }
+  
+  .delete-modal :deep(.n-button) {
+    flex: 1;
+    height: 44px;
+    font-size: 16px;
+    font-weight: 500;
+  }
+}
+
+@media (max-width: 480px) {
+  .delete-modal {
+    margin: 8px;
+  }
+  
+  .delete-modal :deep(.n-dialog) {
+    width: calc(100vw - 16px);
+    border-radius: 8px;
+  }
+
+  .delete-modal :deep(.n-dialog__title) {
+    padding: 16px 16px 12px 16px;
+    font-size: 17px;
+  }
+
+  .delete-modal :deep(.n-dialog__content) {
+    padding: 0 16px 12px 16px;
+    font-size: 15px;
+  }
+
+  .delete-modal :deep(.n-dialog__action) {
+    padding: 12px 16px 16px 16px;
+  }
+
+  /* 小屏按钮堆叠布局 */
+  .delete-modal :deep(.n-space) {
+    flex-direction: column;
+    gap: 8px !important;
+  }
+  
+  .delete-modal :deep(.n-button) {
+    width: 100%;
+    height: 48px;
   }
 }
 </style>

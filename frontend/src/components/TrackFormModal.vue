@@ -332,11 +332,18 @@ watch(
 
 .track-form-modal :deep(.n-card-header) {
   border-bottom: 1px solid #f0f0f0;
+  font-size: 18px;
+  font-weight: 600;
+  padding: 20px 24px 16px 24px;
+}
+
+.track-form-modal :deep(.n-card__content) {
+  padding: 24px;
 }
 
 .track-form-modal :deep(.n-card__action) {
   border-top: 1px solid #f0f0f0;
-  padding-top: 16px;
+  padding: 16px 24px 20px 24px;
 }
 
 .customer-info {
@@ -350,15 +357,129 @@ watch(
   border-left: 3px solid #1890ff;
 }
 
+/* 平板适配 */
+@media (max-width: 1024px) {
+  .track-form-modal {
+    max-width: 90%;
+    margin: 20px auto;
+  }
+}
+
 /* 移动端适配 */
 @media (max-width: 768px) {
   .track-form-modal {
-    margin: 16px;
+    margin: 8px;
     max-width: none;
+    width: calc(100vw - 16px);
+    max-height: calc(100vh - 16px);
+  }
+  
+  .track-form-modal :deep(.n-card) {
+    border-radius: 12px;
+    height: auto;
+    max-height: calc(100vh - 16px);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .track-form-modal :deep(.n-card__content) {
+    padding: 20px;
+    flex: 1;
+    overflow-y: auto;
+  }
+  
+  .track-form-modal :deep(.n-card-header) {
+    padding: 20px 20px 16px 20px;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  
+  .track-form-modal :deep(.n-card__action) {
+    padding: 16px 20px;
+    flex-shrink: 0;
+  }
+
+  .customer-info {
+    padding: 12px 16px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+  }
+
+  /* 移动端表单优化 */
+  .track-form-modal :deep(.n-form-item__label) {
+    font-size: 16px;
+    font-weight: 500;
+    margin-bottom: 8px;
+  }
+
+  .track-form-modal :deep(.n-input__textarea-el) {
+    font-size: 16px;
+    line-height: 1.5;
+  }
+
+  /* 单选按钮移动端优化 */
+  .track-form-modal :deep(.n-radio-group .n-space) {
+    flex-direction: column;
+    gap: 12px !important;
+  }
+
+  .track-form-modal :deep(.n-radio) {
+    padding: 8px 0;
+  }
+
+  /* 移动端按钮优化 */
+  .track-form-modal :deep(.n-card__action .n-space) {
+    width: 100%;
+    justify-content: stretch;
+  }
+  
+  .track-form-modal :deep(.n-button) {
+    flex: 1;
+    height: 44px;
+    font-size: 16px;
+    font-weight: 500;
+  }
+}
+
+@media (max-width: 480px) {
+  .track-form-modal {
+    margin: 4px;
+    width: calc(100vw - 8px);
+    max-height: calc(100vh - 8px);
   }
   
   .track-form-modal :deep(.n-card) {
     border-radius: 8px;
+  }
+
+  .track-form-modal :deep(.n-card__content) {
+    padding: 16px;
+  }
+  
+  .track-form-modal :deep(.n-card-header) {
+    padding: 16px 16px 12px 16px;
+    font-size: 17px;
+  }
+  
+  .track-form-modal :deep(.n-card__action) {
+    padding: 12px 16px 16px 16px;
+  }
+
+  .customer-info {
+    padding: 10px 12px;
+    margin-bottom: 16px;
+    border-radius: 6px;
+  }
+
+  /* 小屏按钮堆叠布局 */
+  .track-form-modal :deep(.n-card__action .n-space) {
+    flex-direction: column;
+    gap: 8px !important;
+  }
+  
+  .track-form-modal :deep(.n-button) {
+    width: 100%;
+    height: 48px;
   }
 }
 </style>

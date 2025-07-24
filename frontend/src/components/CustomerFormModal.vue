@@ -280,22 +280,123 @@ watch(
 
 .customer-form-modal :deep(.n-card-header) {
   border-bottom: 1px solid #f0f0f0;
+  font-size: 18px;
+  font-weight: 600;
+  padding: 20px 24px 16px 24px;
+}
+
+.customer-form-modal :deep(.n-card__content) {
+  padding: 24px;
 }
 
 .customer-form-modal :deep(.n-card__action) {
   border-top: 1px solid #f0f0f0;
-  padding-top: 16px;
+  padding: 16px 24px 20px 24px;
+}
+
+/* 平板适配 */
+@media (max-width: 1024px) {
+  .customer-form-modal {
+    max-width: 90%;
+    margin: 20px auto;
+  }
 }
 
 /* 移动端适配 */
 @media (max-width: 768px) {
   .customer-form-modal {
-    margin: 16px;
+    margin: 8px;
     max-width: none;
+    width: calc(100vw - 16px);
+    max-height: calc(100vh - 16px);
+  }
+  
+  .customer-form-modal :deep(.n-card) {
+    border-radius: 12px;
+    height: auto;
+    max-height: calc(100vh - 16px);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .customer-form-modal :deep(.n-card__content) {
+    padding: 20px;
+    flex: 1;
+    overflow-y: auto;
+  }
+  
+  .customer-form-modal :deep(.n-card-header) {
+    padding: 20px 20px 16px 20px;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  
+  .customer-form-modal :deep(.n-card__action) {
+    padding: 16px 20px;
+    flex-shrink: 0;
+  }
+
+  /* 表单在移动端改为单列布局 */
+  .customer-form-modal :deep(.n-grid) {
+    display: block !important;
+  }
+  
+  .customer-form-modal :deep(.n-form-item-gi) {
+    width: 100% !important;
+    margin-bottom: 20px;
+  }
+
+  /* 移动端按钮优化 */
+  .customer-form-modal :deep(.n-space) {
+    width: 100%;
+    justify-content: stretch;
+  }
+  
+  .customer-form-modal :deep(.n-button) {
+    flex: 1;
+    height: 44px;
+    font-size: 16px;
+    font-weight: 500;
+  }
+}
+
+@media (max-width: 480px) {
+  .customer-form-modal {
+    margin: 4px;
+    width: calc(100vw - 8px);
+    max-height: calc(100vh - 8px);
   }
   
   .customer-form-modal :deep(.n-card) {
     border-radius: 8px;
+  }
+
+  .customer-form-modal :deep(.n-card__content) {
+    padding: 16px;
+  }
+  
+  .customer-form-modal :deep(.n-card-header) {
+    padding: 16px 16px 12px 16px;
+    font-size: 17px;
+  }
+  
+  .customer-form-modal :deep(.n-card__action) {
+    padding: 12px 16px 16px 16px;
+  }
+
+  .customer-form-modal :deep(.n-form-item-gi) {
+    margin-bottom: 16px;
+  }
+
+  /* 小屏按钮堆叠布局 */
+  .customer-form-modal :deep(.n-space) {
+    flex-direction: column;
+    gap: 8px !important;
+  }
+  
+  .customer-form-modal :deep(.n-button) {
+    width: 100%;
+    height: 48px;
   }
 }
 </style>
