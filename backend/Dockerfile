@@ -1,9 +1,6 @@
 # 多阶段构建 - 构建阶段
 FROM docker.m.daocloud.io/rust:1.88.0-slim as builder
 
-# 配置 Rust 更新源
-ENV RUSTUP_UPDATE_ROOT=https://mirrors.ustc.edu.cn/rust-static/rustup
-ENV RUSTUP_DIST_SERVER=https://mirrors.tuna.tsinghua.edu.cn/rustup
 
 # 配置中国镜像源
 RUN sed -i 's/deb.debian.org/mirrors.ustc.edu.cn/g' /etc/apt/sources.list.d/debian.sources && \
@@ -17,19 +14,20 @@ RUN apt-get update && apt-get install -y \
     git \
     && rm -rf /var/lib/apt/lists/*
 
-# 配置 Rust 中国镜像源
-RUN mkdir -p ~/.cargo && \
-    echo '[source.crates-io]' > ~/.cargo/config.toml && \
-    echo 'replace-with = "tuna"' >> ~/.cargo/config.toml && \
-    echo '' >> ~/.cargo/config.toml && \
-    echo '[source.tuna]' >> ~/.cargo/config.toml && \
-    echo 'registry = "https://mirrors.tuna.tsinghua.edu.cn/git/crates.io-index.git"' >> ~/.cargo/config.toml && \
-    echo '' >> ~/.cargo/config.toml && \
-    echo '[source.ustc]' >> ~/.cargo/config.toml && \
-    echo 'registry = "sparse+https://mirrors.ustc.edu.cn/crates.io-index/"' >> ~/.cargo/config.toml && \
-    echo '' >> ~/.cargo/config.toml && \
-    echo '[net]' >> ~/.cargo/config.toml && \
-    echo 'git-fetch-with-cli = true' >> ~/.cargo/config.toml
+# 配置 Cargo 中国镜像源 (关键修复)
+RUN mkdir -p $CARGO_HOME && \
+    echo '[source.crates-io]' > $CARGO_HOME/config.toml && \
+    echo 'replace-with = "ustc"' >> $CARGO_HOME/config.toml && \
+    echo '' >> $CARGO_HOME/config.toml && \
+    echo '[source.ustc]' >> $CARGO_HOME/config.toml && \
+    echo 'registry = "sparse+https://mirrors.ustc.edu.cn/crates.io-index/"' >> $CARGO_HOME/config.toml && \
+    echo '' >> $CARGO_HOME/config.toml && \
+    echo '[net]' >> $CARGO_HOME/config.toml && \
+    echo 'git-fetch-with-cli = true' >> $CARGO_HOME/config.toml
+
+# 或者使用以下环境变量方式 (推荐)
+ENV CARGO_REGISTRIES_CRATES_IO_PROTOCOL=sparse
+ENV CARGO_REGISTRIES_CRATES_IO_INDEX=https://mirrors.ustc.edu.cn/crates.io-index/
 
 WORKDIR /app
 
