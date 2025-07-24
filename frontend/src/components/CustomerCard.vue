@@ -52,14 +52,12 @@
           </n-button>
         </div>
         
-        <div class="info-item" v-if="customer.email">
-          <n-icon :component="MailOutline" size="14" />
-          <n-text depth="2" class="email-text">{{ customer.email }}</n-text>
-        </div>
-        
-        <div class="info-item" v-if="customer.company">
-          <n-icon :component="BusinessOutline" size="14" />
-          <n-text depth="2">{{ customer.company }}</n-text>
+        <div class="info-item">
+          <n-icon :component="StarOutline" size="14" />
+          <n-rate :value="customer.rate" readonly size="small" />
+          <n-text depth="3" style="font-size: 12px; margin-left: 4px;">
+            {{ customer.rate }}/5
+          </n-text>
         </div>
         
         <div class="info-item" v-if="customer.address">
@@ -130,8 +128,7 @@ import { computed, h } from 'vue'
 import { 
   EllipsisVerticalOutline,
   CallOutline,
-  MailOutline,
-  BusinessOutline,
+  StarOutline,
   LocationOutline,
   AddCircleOutline,
   CreateOutline,

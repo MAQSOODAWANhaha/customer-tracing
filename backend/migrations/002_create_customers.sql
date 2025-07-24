@@ -3,8 +3,6 @@ CREATE TABLE customers (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name VARCHAR(100) NOT NULL,
     phone VARCHAR(20),
-    email VARCHAR(100),
-    company VARCHAR(100),
     address TEXT,
     notes TEXT,
     rate INTEGER DEFAULT 0 CHECK(rate >= 0 AND rate <= 5),

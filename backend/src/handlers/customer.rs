@@ -59,8 +59,6 @@ pub struct CustomerDetailResponse {
     pub id: i32,
     pub name: String,
     pub phone: Option<String>,
-    pub email: Option<String>,
-    pub company: Option<String>,
     pub address: Option<String>,
     pub notes: Option<String>,
     pub rate: i32,
@@ -87,8 +85,6 @@ pub async fn list_customers(
         query = query.filter(
             customer::Column::Name.contains(search_term)
                 .or(customer::Column::Phone.contains(search_term))
-                .or(customer::Column::Email.contains(search_term))
-                .or(customer::Column::Company.contains(search_term))
         );
     }
 
@@ -169,8 +165,6 @@ pub async fn get_customer(
         id: customer.id,
         name: customer.name,
         phone: customer.phone,
-        email: customer.email,
-        company: customer.company,
         address: customer.address,
         notes: customer.notes,
         rate: customer.rate,
@@ -196,8 +190,6 @@ pub async fn create_customer(
     let customer = customer::ActiveModel {
         name: Set(req.name),
         phone: Set(req.phone),
-        email: Set(req.email),
-        company: Set(req.company),
         address: Set(req.address),
         notes: Set(req.notes),
         rate: Set(req.rate.unwrap_or(0)),
@@ -239,12 +231,6 @@ pub async fn update_customer(
     }
     if let Some(phone) = req.phone {
         customer_active.phone = Set(Some(phone));
-    }
-    if let Some(email) = req.email {
-        customer_active.email = Set(Some(email));
-    }
-    if let Some(company) = req.company {
-        customer_active.company = Set(Some(company));
     }
     if let Some(address) = req.address {
         customer_active.address = Set(Some(address));

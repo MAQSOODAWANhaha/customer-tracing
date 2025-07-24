@@ -4,8 +4,6 @@ export interface Customer {
   id: number
   name: string
   phone?: string
-  email?: string
-  company?: string
   address?: string
   notes?: string
   rate: number
@@ -33,21 +31,17 @@ export interface CustomerWithLatestTrack {
 export interface CustomerCreateRequest {
   name: string
   phone?: string | null
-  email?: string | null
-  company?: string | null
   address?: string | null
   notes?: string | null
-  next_action: NextAction
+  rate?: number
 }
 
 export interface CustomerUpdateRequest {
   name?: string
   phone?: string | null
-  email?: string | null
-  company?: string | null
   address?: string | null
   notes?: string | null
-  next_action?: NextAction
+  rate?: number
 }
 
 export interface CustomerResponse {

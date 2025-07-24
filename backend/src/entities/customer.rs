@@ -9,8 +9,6 @@ pub struct Model {
     pub id: i32,
     pub name: String,
     pub phone: Option<String>,
-    pub email: Option<String>,
-    pub company: Option<String>,
     pub address: Option<String>,
     pub notes: Option<String>,
     pub rate: i32,
@@ -63,8 +61,6 @@ pub struct CustomerWithLatestTrack {
 pub struct CreateCustomerRequest {
     pub name: String,
     pub phone: Option<String>,
-    pub email: Option<String>,
-    pub company: Option<String>,
     pub address: Option<String>,
     pub notes: Option<String>,
     pub rate: Option<i32>,
@@ -74,8 +70,6 @@ pub struct CreateCustomerRequest {
 pub struct UpdateCustomerRequest {
     pub name: Option<String>,
     pub phone: Option<String>,
-    pub email: Option<String>,
-    pub company: Option<String>,
     pub address: Option<String>,
     pub notes: Option<String>,
     pub rate: Option<i32>,

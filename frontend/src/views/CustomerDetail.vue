@@ -81,31 +81,16 @@
                     </div>
                   </div>
 
-                  <div class="info-item" v-if="customer.email">
+                  <div class="info-item">
                     <div class="info-label">
-                      <n-icon :component="MailOutline" />
-                      <span>电子邮箱</span>
+                      <n-icon :component="StarOutline" />
+                      <span>客户评级</span>
                     </div>
                     <div class="info-value">
-                      <n-text>{{ customer.email }}</n-text>
-                      <n-button 
-                        text 
-                        size="tiny" 
-                        @click="handleEmail"
-                        class="action-link"
-                      >
-                        发送
-                      </n-button>
-                    </div>
-                  </div>
-
-                  <div class="info-item" v-if="customer.company">
-                    <div class="info-label">
-                      <n-icon :component="BusinessOutline" />
-                      <span>公司名称</span>
-                    </div>
-                    <div class="info-value">
-                      <n-text>{{ customer.company }}</n-text>
+                      <n-rate :value="customer.rate" readonly size="small" />
+                      <n-text depth="3" style="font-size: 12px; margin-left: 8px;">
+                        {{ customer.rate }}/5
+                      </n-text>
                     </div>
                   </div>
 
@@ -202,8 +187,7 @@ import {
   CreateOutline,
   AddCircleOutline,
   CallOutline,
-  MailOutline,
-  BusinessOutline,
+  StarOutline,
   LocationOutline,
   DocumentTextOutline
 } from '@vicons/ionicons5'
@@ -284,11 +268,6 @@ const handleCall = () => {
   }
 }
 
-const handleEmail = () => {
-  if (customer.value?.email) {
-    window.open(`mailto:${customer.value.email}`)
-  }
-}
 
 const handleEditSuccess = () => {
   showEditModal.value = false

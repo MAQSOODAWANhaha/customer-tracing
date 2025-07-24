@@ -48,30 +48,16 @@
           />
         </n-form-item-gi>
         
-        <n-form-item-gi :span="12" label="电子邮箱" path="email">
-          <n-input
-            v-model:value="formData.email"
-            placeholder="请输入电子邮箱"
+        <n-form-item-gi :span="12" label="客户评级" path="rate">
+          <n-rate
+            v-model:value="formData.rate"
+            :max="5"
+            allow-half
             clearable
-            maxlength="255"
           />
-        </n-form-item-gi>
-        
-        <n-form-item-gi :span="12" label="公司名称" path="company">
-          <n-input
-            v-model:value="formData.company"
-            placeholder="请输入公司名称"
-            clearable
-            maxlength="200"
-          />
-        </n-form-item-gi>
-        
-        <n-form-item-gi :span="12" label="下一步行动" path="next_action">
-          <n-select
-            v-model:value="formData.next_action"
-            :options="nextActionOptions"
-            placeholder="请选择下一步行动"
-          />
+          <n-text depth="3" style="font-size: 12px; margin-left: 8px;">
+            {{ formData.rate || 0 }}/5
+          </n-text>
         </n-form-item-gi>
         
         <n-form-item-gi :span="24" label="联系地址" path="address">
@@ -119,7 +105,7 @@ import { ref, reactive, computed, watch } from 'vue'
 import { useMessage, type FormInst, type FormRules } from 'naive-ui'
 import { CloseOutline } from '@vicons/ionicons5'
 import { useCustomerStore } from '@/stores/customer'
-import type { Customer, CustomerCreateRequest, CustomerUpdateRequest, NextAction } from '@/types'
+import type { Customer, CustomerCreateRequest, CustomerUpdateRequest } from '@/types'
 
 interface Props {
   show: boolean
@@ -144,11 +130,9 @@ const loading = ref(false)
 const formData = reactive<CustomerCreateRequest & { id?: number }>({
   name: '',
   phone: '',
-  email: '',
-  company: '',
   address: '',
   notes: '',
-  next_action: '继续跟进'
+  rate: 0
 })
 
 // 计算属性
@@ -158,12 +142,6 @@ const showModal = computed({
 })
 
 const isEditing = computed(() => !!props.customer?.id)
-
-// 下一步行动选项
-const nextActionOptions = [
-  { label: '继续跟进', value: '继续跟进' as NextAction },
-  { label: '结束跟进', value: '结束跟进' as NextAction }
-]
 
 // 表单验证规则
 const formRules: FormRules = {
@@ -178,24 +156,14 @@ const formRules: FormRules = {
       trigger: ['input', 'blur'] 
     }
   ],
-  email: [
-    { 
-      pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, 
-      message: '请输入正确的邮箱地址', 
-      trigger: ['input', 'blur'] 
-    }
-  ],
-  company: [
-    { max: 200, message: '公司名称不能超过 200 个字符', trigger: ['input', 'blur'] }
-  ],
   address: [
     { max: 500, message: '联系地址不能超过 500 个字符', trigger: ['input', 'blur'] }
   ],
   notes: [
     { max: 1000, message: '备注信息不能超过 1000 个字符', trigger: ['input', 'blur'] }
   ],
-  next_action: [
-    { required: true, message: '请选择下一步行动', trigger: ['change', 'blur'] }
+  rate: [
+    { type: 'number', min: 0, max: 5, message: '评级必须在 0-5 之间', trigger: ['change', 'blur'] }
   ]
 }
 
@@ -203,11 +171,9 @@ const formRules: FormRules = {
 const resetForm = () => {
   formData.name = ''
   formData.phone = ''
-  formData.email = ''
-  formData.company = ''
   formData.address = ''
   formData.notes = ''
-  formData.next_action = '继续跟进'
+  formData.rate = 0
   delete formData.id
 }
 
@@ -216,11 +182,9 @@ const loadCustomerData = (customer: Customer) => {
   formData.id = customer.id
   formData.name = customer.name
   formData.phone = customer.phone || ''
-  formData.email = customer.email || ''
-  formData.company = customer.company || ''
   formData.address = customer.address || ''
   formData.notes = customer.notes || ''
-  formData.next_action = customer.next_action
+  formData.rate = customer.rate || 0
 }
 
 // 处理提交
@@ -236,11 +200,9 @@ const handleSubmit = async () => {
       const updateData: CustomerUpdateRequest = {
         name: formData.name,
         phone: formData.phone || null,
-        email: formData.email || null,
-        company: formData.company || null,
         address: formData.address || null,
         notes: formData.notes || null,
-        next_action: formData.next_action
+        rate: formData.rate
       }
       await customerStore.updateCustomer(formData.id, updateData)
       message.success('客户信息更新成功')
@@ -249,11 +211,9 @@ const handleSubmit = async () => {
       const createData: CustomerCreateRequest = {
         name: formData.name,
         phone: formData.phone || null,
-        email: formData.email || null,
-        company: formData.company || null,
         address: formData.address || null,
         notes: formData.notes || null,
-        next_action: formData.next_action
+        rate: formData.rate
       }
       await customerStore.createCustomer(createData)
       message.success('客户创建成功')

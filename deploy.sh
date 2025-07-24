@@ -37,6 +37,9 @@ print_step() {
 PUBLIC_IP=""
 DOMAIN=""
 PROTOCOL="http"
+ADMIN_USERNAME=""
+ADMIN_PASSWORD=""
+ADMIN_NAME=""
 
 # 获取用户输入的公网IP或域名
 get_public_address() {
@@ -115,6 +118,70 @@ get_public_address() {
     done
     
     print_success "配置地址: ${PROTOCOL}://${DOMAIN}"
+}
+
+# 获取管理员账户配置
+get_admin_config() {
+    print_step "配置管理员账户"
+    echo
+    
+    print_info "请配置系统管理员账户信息"
+    echo "1) 使用默认配置 (用户名: admin, 密码: admin123, 姓名: 管理员)"
+    echo "2) 自定义配置"
+    echo
+    
+    while true; do
+        read -p "请选择 [1-2]: " choice
+        case $choice in
+            1)
+                ADMIN_USERNAME="admin"
+                ADMIN_PASSWORD="admin123"
+                ADMIN_NAME="管理员"
+                print_success "使用默认管理员配置"
+                break
+                ;;
+            2)
+                while true; do
+                    read -p "请输入管理员用户名: " username
+                    if [[ $username =~ ^[a-zA-Z0-9_]{3,20}$ ]]; then
+                        ADMIN_USERNAME="$username"
+                        break
+                    else
+                        print_error "用户名必须是3-20位字母、数字或下划线"
+                    fi
+                done
+                
+                while true; do
+                    read -s -p "请输入管理员密码: " password
+                    echo
+                    if [[ ${#password} -ge 6 ]]; then
+                        read -s -p "请再次确认密码: " password_confirm
+                        echo
+                        if [[ "$password" == "$password_confirm" ]]; then
+                            ADMIN_PASSWORD="$password"
+                            break
+                        else
+                            print_error "两次输入的密码不一致，请重新输入"
+                        fi
+                    else
+                        print_error "密码长度至少6位"
+                    fi
+                done
+                
+                read -p "请输入管理员姓名: " name
+                ADMIN_NAME="${name:-管理员}"
+                
+                print_success "管理员配置完成"
+                break
+                ;;
+            *)
+                print_error "请输入有效选项 [1-2]"
+                ;;
+        esac
+    done
+    
+    print_info "管理员账户: $ADMIN_USERNAME"
+    print_info "管理员姓名: $ADMIN_NAME"
 }
 
 # 检查 Docker 和 Docker Compose
@@ -213,11 +280,20 @@ init_database() {
     print_info "运行数据库迁移..."
     docker-compose -f docker-compose.prod.yaml exec -T backend /app/customer-tracker database migrate
     
-    # 创建默认管理员用户
-    print_info "创建默认管理员用户..."
-    docker-compose -f docker-compose.prod.yaml exec -T backend /app/customer-tracker user create -u admin -p admin123 -n "管理员" || {
-        print_warning "用户可能已存在，跳过创建"
-    }
+    # 创建管理员用户
+    print_info "创建管理员用户: $ADMIN_USERNAME"
+    
+    # 检查用户是否已存在
+    if docker-compose -f docker-compose.prod.yaml exec -T backend /app/customer-tracker user list 2>/dev/null | grep -q "^$ADMIN_USERNAME$"; then
+        print_warning "用户 '$ADMIN_USERNAME' 已存在，跳过创建"
+    else
+        if docker-compose -f docker-compose.prod.yaml exec -T backend /app/customer-tracker user create -u "$ADMIN_USERNAME" -p "$ADMIN_PASSWORD" -n "$ADMIN_NAME"; then
+            print_success "管理员用户 '$ADMIN_USERNAME' 创建成功"
+        else
+            print_error "创建用户失败"
+            return 1
+        fi
+    fi
     
     print_success "数据库初始化完成"
 }
@@ -305,7 +381,8 @@ deploy() {
         echo "🌟 客户追踪系统部署完成"
         echo "=================================================================="
         echo "📱 访问地址: ${PROTOCOL}://${DOMAIN}"
-        echo "🔑 默认账户: admin / admin123"
+        echo "🔑 管理员账户: $ADMIN_USERNAME / [已设置的密码]"
+        echo "👤 管理员姓名: $ADMIN_NAME"
         echo "📊 管理命令: ./deploy.sh logs    # 查看日志"
         echo "📊 管理命令: ./deploy.sh stop    # 停止服务"
         echo "📊 管理命令: ./deploy.sh status  # 查看状态"
@@ -458,10 +535,11 @@ show_help() {
 
 ✨ 部署流程:
   1. 自动检测或手动配置公网IP/域名
-  2. 自动生成安全的JWT密钥和环境变量
-  3. 自动构建并启动所有服务 (Nginx + 前端 + 后端)
-  4. 自动初始化数据库和创建管理员账户
-  5. 执行健康检查确保服务正常运行
+  2. 配置管理员账户信息 (可选择默认或自定义)
+  3. 自动生成安全的JWT密钥和环境变量
+  4. 自动构建并启动所有服务 (Nginx + 前端 + 后端)
+  5. 自动初始化数据库和创建管理员账户
+  6. 执行健康检查确保服务正常运行
 
 💡 使用示例:
   ./deploy.sh deploy           # 一键部署 (推荐)
@@ -470,9 +548,9 @@ show_help() {
   ./deploy.sh restart nginx    # 重启Nginx服务
   ./deploy.sh stop             # 停用服务
 
-🔐 默认登录账户:
-  用户名: admin
-  密码: admin123
+🔐 管理员账户:
+  部署时配置 (可选择默认配置或自定义设置)
+  默认: admin / admin123
 
 📝 部署要求:
   - Docker 和 Docker Compose
@@ -492,7 +570,8 @@ quick_deploy() {
     echo
     echo "此脚本将自动完成以下操作:"
     echo "  ✓ 检查系统依赖"
-    echo "  ✓ 配置公网访问地址"  
+    echo "  ✓ 配置公网访问地址"
+    echo "  ✓ 配置管理员账户"  
     echo "  ✓ 生成安全配置"
     echo "  ✓ 构建并启动服务"
     echo "  ✓ 初始化数据库"
@@ -509,6 +588,7 @@ quick_deploy() {
     # 执行完整部署流程
     check_dependencies
     get_public_address
+    get_admin_config
     create_directories  
     generate_env_config
     deploy
@@ -528,6 +608,7 @@ main() {
         "deploy")
             check_dependencies
             get_public_address
+            get_admin_config
             create_directories
             generate_env_config
             deploy

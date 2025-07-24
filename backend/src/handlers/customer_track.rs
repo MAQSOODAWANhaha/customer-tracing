@@ -1,14 +1,14 @@
 use axum::{
-    extract::{Path, State},
+    extract::{Path, Query, State},
     http::StatusCode,
     response::Json,
     Extension,
 };
 use chrono::Utc;
 use sea_orm::{
-    ActiveModelTrait, ColumnTrait, EntityTrait, QueryFilter, QueryOrder, Set,
+    ActiveModelTrait, ColumnTrait, EntityTrait, PaginatorTrait, QueryFilter, QueryOrder, Set,
 };
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 use crate::{
     entities::{
@@ -22,6 +22,26 @@ use crate::{
     middleware::auth::CurrentUser,
     handlers::auth::AppState,
 };
+
+#[derive(Debug, Deserialize)]
+pub struct TrackListQuery {
+    pub customer_id: i32,
+    #[serde(default = "default_page")]
+    pub page: u64,
+    #[serde(default = "default_limit")]
+    pub limit: u64,
+}
+
+fn default_page() -> u64 { 1 }
+fn default_limit() -> u64 { 20 }
+
+#[derive(Debug, Serialize)]
+pub struct TrackListResponse {
+    pub tracks: Vec<CustomerTrackInfo>,
+    pub total: u64,
+    pub page: u64,
+    pub limit: u64,
+}
 
 #[derive(Debug, Serialize)]
 pub struct CustomerTrackListResponse {
@@ -193,6 +213,45 @@ pub async fn delete_customer_track(
         .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
     Ok(StatusCode::NO_CONTENT)
+}
+
+// 分页查询跟进记录 - 支持前端的 /api/tracks?customer_id=1 请求
+pub async fn list_tracks(
+    Extension(current_user): Extension<CurrentUser>,
+    Query(params): Query<TrackListQuery>,
+    State(app_state): State<AppState>,
+) -> Result<Json<TrackListResponse>, StatusCode> {
+    // 验证客户是否属于当前用户
+    let _customer = Customer::find_by_id(params.customer_id)
+        .filter(customer::Column::UserId.eq(current_user.id))
+        .filter(customer::Column::IsDeleted.eq(false))
+        .one(&app_state.db)
+        .await
+        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?
+        .ok_or(StatusCode::NOT_FOUND)?;
+
+    // 分页查询跟进记录
+    let paginator = CustomerTrack::find()
+        .filter(customer_track::Column::CustomerId.eq(params.customer_id))
+        .order_by_desc(customer_track::Column::TrackTime)
+        .paginate(&app_state.db, params.limit);
+
+    let tracks_page = paginator
+        .fetch_page(params.page - 1)
+        .await
+        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+
+    let total = paginator
+        .num_items()
+        .await
+        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+
+    Ok(Json(TrackListResponse {
+        tracks: tracks_page.into_iter().map(CustomerTrackInfo::from).collect(),
+        total,
+        page: params.page,
+        limit: params.limit,
+    }))
 }
 
 pub async fn get_next_actions() -> Json<NextActionsResponse> {
