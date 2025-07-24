@@ -6,7 +6,6 @@ import type {
   CustomerCreateRequest, 
   CustomerUpdateRequest,
   CustomerListResponse,
-  CustomerResponse,
   NextAction,
   ApiError
 } from '@/types'
@@ -55,9 +54,9 @@ export const useCustomerStore = defineStore('customer', () => {
   const fetchCustomer = async (id: number) => {
     try {
       loading.value = true
-      const response = await request.get<CustomerResponse>(`/api/customers/${id}`)
-      currentCustomer.value = response.data.customer
-      return response.data.customer
+      const response = await request.get<Customer>(`/api/customers/${id}`)
+      currentCustomer.value = response.data
+      return response.data
     } catch (error) {
       const apiError = error as ApiError
       throw new Error(apiError.message || '获取客户详情失败')
@@ -70,13 +69,13 @@ export const useCustomerStore = defineStore('customer', () => {
   const createCustomer = async (customerData: CustomerCreateRequest) => {
     try {
       loading.value = true
-      const response = await request.post<CustomerResponse>('/api/customers', customerData)
+      const response = await request.post<Customer>('/api/customers', customerData)
       
       // 添加到本地列表
-      customers.value.unshift(response.data.customer)
+      customers.value.unshift(response.data)
       totalCount.value += 1
       
-      return response.data.customer
+      return response.data
     } catch (error) {
       const apiError = error as ApiError
       throw new Error(apiError.message || '创建客户失败')
@@ -89,20 +88,20 @@ export const useCustomerStore = defineStore('customer', () => {
   const updateCustomer = async (id: number, customerData: CustomerUpdateRequest) => {
     try {
       loading.value = true
-      const response = await request.put<CustomerResponse>(`/api/customers/${id}`, customerData)
+      const response = await request.put<Customer>(`/api/customers/${id}`, customerData)
       
       // 更新本地列表
       const index = customers.value.findIndex(c => c.id === id)
       if (index !== -1) {
-        customers.value[index] = response.data.customer
+        customers.value[index] = response.data
       }
       
       // 更新当前客户
       if (currentCustomer.value?.id === id) {
-        currentCustomer.value = response.data.customer
+        currentCustomer.value = response.data
       }
       
-      return response.data.customer
+      return response.data
     } catch (error) {
       const apiError = error as ApiError
       throw new Error(apiError.message || '更新客户失败')
