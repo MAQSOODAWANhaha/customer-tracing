@@ -82,7 +82,26 @@
         <div class="stat-item">
           <n-text depth="3" style="font-size: 12px;">最后跟进</n-text>
           <n-text strong style="font-size: 12px;">
-            {{ customer.last_track_at ? formatDate(customer.last_track_at) : '无' }}
+            {{ customer.latest_track_time ? formatDate(customer.latest_track_time) : '无' }}
+          </n-text>
+        </div>
+      </div>
+
+      <!-- 最后跟进状态 -->
+      <div v-if="customer.latest_next_action" class="last-track-section">
+        <div class="last-track-info">
+          <n-text depth="3" style="font-size: 12px;">最后状态</n-text>
+          <n-tag 
+            :type="getStatusTagType(customer.latest_next_action)" 
+            size="small"
+            round
+          >
+            {{ customer.latest_next_action }}
+          </n-tag>
+        </div>
+        <div v-if="customer.latest_content" class="last-track-content">
+          <n-text depth="3" style="font-size: 11px;">
+            {{ truncateText(customer.latest_content, 40) }}
           </n-text>
         </div>
       </div>
@@ -135,17 +154,17 @@ import {
   EyeOutline,
   TrashOutline
 } from '@vicons/ionicons5'
-import type { Customer, NextAction } from '@/types'
+import type { CustomerWithLatestTrack, NextAction } from '@/types'
 
 interface Props {
-  customer: Customer
+  customer: CustomerWithLatestTrack
 }
 
 interface Emits {
-  (e: 'view', customer: Customer): void
-  (e: 'edit', customer: Customer): void
-  (e: 'delete', customer: Customer): void
-  (e: 'track', customer: Customer): void
+  (e: 'view', customer: CustomerWithLatestTrack): void
+  (e: 'edit', customer: CustomerWithLatestTrack): void
+  (e: 'delete', customer: CustomerWithLatestTrack): void
+  (e: 'track', customer: CustomerWithLatestTrack): void
 }
 
 const props = defineProps<Props>()
@@ -341,6 +360,26 @@ const formatDate = (dateString: string) => {
   flex-direction: column;
   align-items: center;
   gap: 2px;
+}
+
+.last-track-section {
+  padding: 10px;
+  background: linear-gradient(135deg, #f6f8fa 0%, #f1f3f4 100%);
+  border-radius: 8px;
+  border-left: 3px solid #52c41a;
+}
+
+.last-track-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.last-track-content {
+  padding-left: 8px;
+  border-left: 2px solid #e1e4e8;
+  line-height: 1.4;
 }
 
 .footer-info {

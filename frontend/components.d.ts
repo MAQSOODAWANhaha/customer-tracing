@@ -10,6 +10,7 @@ declare module 'vue' {
     CustomerCard: typeof import('./src/components/CustomerCard.vue')['default']
     CustomerFormModal: typeof import('./src/components/CustomerFormModal.vue')['default']
     NAlert: typeof import('naive-ui')['NAlert']
+    NAvatar: typeof import('naive-ui')['NAvatar']
     NButton: typeof import('naive-ui')['NButton']
     NCard: typeof import('naive-ui')['NCard']
     NCheckbox: typeof import('naive-ui')['NCheckbox']

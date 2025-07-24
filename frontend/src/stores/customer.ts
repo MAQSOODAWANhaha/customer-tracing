@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import request from '@/utils/request'
 import type { 
   Customer, 
+  CustomerWithLatestTrack,
   CustomerCreateRequest, 
   CustomerUpdateRequest,
   CustomerListResponse,
@@ -18,7 +19,7 @@ interface CustomerFilters {
 }
 
 export const useCustomerStore = defineStore('customer', () => {
-  const customers = ref<Customer[]>([])
+  const customers = ref<CustomerWithLatestTrack[]>([])
   const currentCustomer = ref<Customer | null>(null)
   const totalCount = ref(0)
   const loading = ref(false)
@@ -71,8 +72,15 @@ export const useCustomerStore = defineStore('customer', () => {
       loading.value = true
       const response = await request.post<Customer>('/api/customers', customerData)
       
-      // 添加到本地列表
-      customers.value.unshift(response.data)
+      // 转换为 CustomerWithLatestTrack 格式并添加到本地列表
+      const customerWithTrack: CustomerWithLatestTrack = {
+        ...response.data,
+        track_count: 0,
+        latest_track_time: undefined,
+        latest_next_action: undefined,
+        latest_content: undefined
+      }
+      customers.value.unshift(customerWithTrack)
       totalCount.value += 1
       
       return response.data
@@ -93,7 +101,12 @@ export const useCustomerStore = defineStore('customer', () => {
       // 更新本地列表
       const index = customers.value.findIndex(c => c.id === id)
       if (index !== -1) {
-        customers.value[index] = response.data
+        // 保留原有的跟进数据，只更新客户基本信息
+        const existingCustomer = customers.value[index]
+        customers.value[index] = {
+          ...existingCustomer,
+          ...response.data
+        }
       }
       
       // 更新当前客户

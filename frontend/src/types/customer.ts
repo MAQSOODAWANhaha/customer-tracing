@@ -20,12 +20,18 @@ export interface CustomerWithLatestTrack {
   id: number
   name: string
   phone?: string
+  address?: string
   rate: number
   notes?: string
+  next_action: NextAction
   latest_track_time?: string
   latest_next_action?: NextAction
   latest_content?: string
+  track_count: number
+  user_id: number
   created_at: string
+  updated_at: string
+  is_deleted: boolean
 }
 
 export interface CustomerCreateRequest {
@@ -49,7 +55,7 @@ export interface CustomerResponse {
 }
 
 export interface CustomerListResponse {
-  customers: Customer[]
+  customers: CustomerWithLatestTrack[]
   total: number
   page: number
   limit: number

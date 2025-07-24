@@ -46,13 +46,18 @@ pub struct CustomerWithLatestTrack {
     pub id: i32,
     pub name: String,
     pub phone: Option<String>,
+    pub address: Option<String>,
     pub rate: f32,
     pub notes: Option<String>,
+    pub next_action: NextAction,
     pub latest_track_time: Option<chrono::DateTime<chrono::Utc>>,
     pub latest_next_action: Option<NextAction>,
     pub latest_content: Option<String>,
     pub track_count: i64,
+    pub user_id: i32,
     pub created_at: chrono::DateTime<chrono::Utc>,
+    pub updated_at: chrono::DateTime<chrono::Utc>,
+    pub is_deleted: bool,
 }
 
 #[derive(Debug, Serialize)]
@@ -125,6 +130,7 @@ pub async fn list_customers(
             id: customer.id,
             name: customer.name,
             phone: customer.phone,
+            address: customer.address,
             rate: customer.rate,
             notes: customer.notes,
             latest_track_time: latest_track.as_ref().map(|t| t.track_time),
