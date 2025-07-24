@@ -254,6 +254,42 @@ pub async fn list_tracks(
     }))
 }
 
+// 创建跟进记录 - 支持前端的 POST /api/tracks 请求
+pub async fn create_track(
+    Extension(current_user): Extension<CurrentUser>,
+    State(app_state): State<AppState>,
+    Json(req): Json<CreateTrackRequest>,
+) -> Result<Json<CustomerTrackInfo>, StatusCode> {
+    // 验证客户是否属于当前用户
+    let _customer = Customer::find_by_id(req.customer_id)
+        .filter(customer::Column::UserId.eq(current_user.id))
+        .filter(customer::Column::IsDeleted.eq(false))
+        .one(&app_state.db)
+        .await
+        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?
+        .ok_or(StatusCode::NOT_FOUND)?;
+
+    let now = Utc::now();
+    
+    let track = customer_track::ActiveModel {
+        customer_id: Set(req.customer_id),
+        content: Set(req.content),
+        next_action: Set(req.next_action.unwrap_or(NextAction::Continue)),
+        track_time: Set(req.track_time.unwrap_or(now)),
+        next_track_time: Set(req.next_track_time),
+        created_at: Set(now),
+        updated_at: Set(now),
+        ..Default::default()
+    };
+
+    let track = track
+        .insert(&app_state.db)
+        .await
+        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+
+    Ok(Json(CustomerTrackInfo::from(track)))
+}
+
 pub async fn get_next_actions() -> Json<NextActionsResponse> {
     Json(NextActionsResponse {
         actions: NextAction::variants().into_iter().map(|s| s.to_string()).collect(),

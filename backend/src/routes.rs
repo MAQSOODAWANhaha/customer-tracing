@@ -43,7 +43,7 @@ pub fn create_routes(app_state: AppState) -> Router {
             get(customer_track::list_customer_tracks)
             .post(customer_track::create_customer_track)
         )
-        .route("/api/tracks", get(customer_track::list_tracks))
+        .route("/api/tracks", get(customer_track::list_tracks).post(customer_track::create_track))
         .route("/api/tracks/{id}", 
             put(customer_track::update_customer_track)
             .delete(customer_track::delete_customer_track)

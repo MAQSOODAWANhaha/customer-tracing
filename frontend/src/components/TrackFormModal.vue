@@ -10,13 +10,6 @@
     :close-on-esc="false"
     :mask-closable="false"
   >
-    <template #header-extra>
-      <n-button text @click="handleCancel">
-        <template #icon>
-          <n-icon :component="CloseOutline" />
-        </template>
-      </n-button>
-    </template>
 
     <div v-if="customer" class="customer-info">
       <n-text depth="2">客户：</n-text>
@@ -114,7 +107,6 @@
 import { ref, reactive, computed, watch } from 'vue'
 import { useMessage, type FormInst, type FormRules } from 'naive-ui'
 import { 
-  CloseOutline,
   CheckmarkCircleOutline,
   CloseCircleOutline
 } from '@vicons/ionicons5'

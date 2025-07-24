@@ -63,6 +63,7 @@ impl From<Model> for CustomerTrackInfo {
 
 #[derive(Debug, Deserialize)]
 pub struct CreateTrackRequest {
+    pub customer_id: i32,
     pub content: String,
     pub next_action: Option<NextAction>,
     pub track_time: Option<ChronoDateTimeUtc>,

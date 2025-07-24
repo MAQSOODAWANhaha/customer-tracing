@@ -141,6 +141,7 @@
             <tracking-timeline 
               :customer-id="customerId" 
               @refresh="handleRefreshCustomer"
+              @add-track="showTrackModal = true"
             />
           </n-gi>
         </n-grid>
