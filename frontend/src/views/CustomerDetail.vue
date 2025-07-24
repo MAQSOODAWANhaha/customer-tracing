@@ -66,6 +66,17 @@
                 </div>
                 
                 <div class="meta-item">
+                  <n-icon :component="PersonOutline" size="16" color="#666" />
+                  <n-tag 
+                    size="small" 
+                    :type="getGroupTagType(customer.customer_group)"
+                    round
+                  >
+                    {{ customer.customer_group }}
+                  </n-tag>
+                </div>
+                
+                <div class="meta-item">
                   <n-icon :component="CallOutline" size="16" color="#666" />
                   <n-text depth="2">{{ customer.phone || '未填写手机号' }}</n-text>
                 </div>
@@ -145,6 +156,22 @@
                       <n-text depth="3" style="font-size: 12px; margin-left: 8px;">
                         {{ customer.rate }}/5
                       </n-text>
+                    </div>
+                  </div>
+
+                  <div class="info-item">
+                    <div class="info-label">
+                      <n-icon :component="PersonOutline" />
+                      <span>客户分组</span>
+                    </div>
+                    <div class="info-value">
+                      <n-tag 
+                        size="small" 
+                        :type="getGroupTagType(customer.customer_group)"
+                        round
+                      >
+                        {{ customer.customer_group }}
+                      </n-tag>
                     </div>
                   </div>
 
@@ -247,13 +274,14 @@ import {
   LocationOutline,
   DocumentTextOutline,
   CheckmarkCircleOutline,
-  StopCircleOutline
+  StopCircleOutline,
+  PersonOutline
 } from '@vicons/ionicons5'
 import { useCustomerStore } from '@/stores/customer'
 import CustomerFormModal from '@/components/CustomerFormModal.vue'
 import TrackingTimeline from '@/components/TrackingTimeline.vue'
 import TrackFormModal from '@/components/TrackFormModal.vue'
-import type { NextAction } from '@/types'
+import type { NextAction, CustomerGroup } from '@/types'
 
 const route = useRoute()
 const router = useRouter()
@@ -302,6 +330,22 @@ const getStatusIcon = (status: NextAction) => {
       return StopCircleOutline
     default:
       return CheckmarkCircleOutline
+  }
+}
+
+// 获取分组标签类型
+const getGroupTagType = (group: CustomerGroup) => {
+  switch (group) {
+    case '团课':
+      return 'info'
+    case '小班':
+      return 'success'
+    case '私教':
+      return 'warning'
+    case '教培':
+      return 'error'
+    default:
+      return 'default'
   }
 }
 

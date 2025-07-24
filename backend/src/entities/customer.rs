@@ -1,6 +1,7 @@
 use sea_orm::entity::prelude::*;
 use serde::{Deserialize, Serialize};
 use super::next_action::NextAction;
+use super::customer_group::CustomerGroup;
 
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Serialize, Deserialize)]
 #[sea_orm(table_name = "customers")]
@@ -12,6 +13,7 @@ pub struct Model {
     pub address: Option<String>,
     pub notes: Option<String>,
     pub rate: f32,
+    pub customer_group: CustomerGroup,
     pub user_id: i32,
     pub created_at: ChronoDateTimeUtc,
     pub updated_at: ChronoDateTimeUtc,
@@ -64,6 +66,7 @@ pub struct CreateCustomerRequest {
     pub address: Option<String>,
     pub notes: Option<String>,
     pub rate: Option<f32>,
+    pub customer_group: Option<CustomerGroup>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -73,4 +76,5 @@ pub struct UpdateCustomerRequest {
     pub address: Option<String>,
     pub notes: Option<String>,
     pub rate: Option<f32>,
+    pub customer_group: Option<CustomerGroup>,
 }

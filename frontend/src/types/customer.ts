@@ -1,4 +1,5 @@
 export type NextAction = '继续跟进' | '结束跟进'
+export type CustomerGroup = '团课' | '小班' | '私教' | '教培'
 
 export interface Customer {
   id: number
@@ -7,6 +8,7 @@ export interface Customer {
   address?: string
   notes?: string
   rate: number
+  customer_group: CustomerGroup
   next_action: NextAction
   user_id: number
   track_count?: number
@@ -23,6 +25,7 @@ export interface CustomerWithLatestTrack {
   address?: string
   rate: number
   notes?: string
+  customer_group: CustomerGroup
   next_action: NextAction
   latest_track_time?: string
   latest_next_action?: NextAction
@@ -40,6 +43,7 @@ export interface CustomerCreateRequest {
   address?: string | null
   notes?: string | null
   rate?: number
+  customer_group?: CustomerGroup
 }
 
 export interface CustomerUpdateRequest {
@@ -48,6 +52,7 @@ export interface CustomerUpdateRequest {
   address?: string | null
   notes?: string | null
   rate?: number
+  customer_group?: CustomerGroup
 }
 
 export interface CustomerResponse {

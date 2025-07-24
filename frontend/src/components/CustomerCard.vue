@@ -60,6 +60,17 @@
           </n-text>
         </div>
         
+        <div class="info-item">
+          <n-icon :component="PersonOutline" size="14" />
+          <n-tag 
+            size="small" 
+            :type="getGroupTagType(customer.customer_group)"
+            round
+          >
+            {{ customer.customer_group }}
+          </n-tag>
+        </div>
+        
         <div class="info-item" v-if="customer.address">
           <n-icon :component="LocationOutline" size="14" />
           <n-text depth="2" class="address-text">{{ customer.address }}</n-text>
@@ -149,12 +160,13 @@ import {
   CallOutline,
   StarOutline,
   LocationOutline,
+  PersonOutline,
   AddCircleOutline,
   CreateOutline,
   EyeOutline,
   TrashOutline
 } from '@vicons/ionicons5'
-import type { CustomerWithLatestTrack, NextAction } from '@/types'
+import type { CustomerWithLatestTrack, NextAction, CustomerGroup } from '@/types'
 
 interface Props {
   customer: CustomerWithLatestTrack
@@ -210,6 +222,22 @@ const getStatusTagType = (status: NextAction) => {
       return 'default'
     default:
       return 'info'
+  }
+}
+
+// 获取分组标签类型
+const getGroupTagType = (group: CustomerGroup) => {
+  switch (group) {
+    case '团课':
+      return 'info'
+    case '小班':
+      return 'success'
+    case '私教':
+      return 'warning'
+    case '教培':
+      return 'error'
+    default:
+      return 'default'
   }
 }
 

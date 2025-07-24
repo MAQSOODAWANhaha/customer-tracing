@@ -14,6 +14,7 @@ use serde::{Deserialize, Serialize};
 use crate::{
     entities::{
         customer::{self, Entity as Customer, CreateCustomerRequest, UpdateCustomerRequest},
+        customer_group::CustomerGroup,
         customer_track::{self, Entity as CustomerTrack},
         next_action::NextAction,
     },
@@ -28,6 +29,7 @@ pub struct CustomerListQuery {
     #[serde(default = "default_limit")]
     pub limit: u64,
     pub search: Option<String>,
+    pub status: Option<NextAction>,
 }
 
 fn default_page() -> u64 { 1 }
@@ -41,7 +43,7 @@ pub struct CustomerListResponse {
     pub limit: u64,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Clone)]
 pub struct CustomerWithLatestTrack {
     pub id: i32,
     pub name: String,
@@ -49,6 +51,7 @@ pub struct CustomerWithLatestTrack {
     pub address: Option<String>,
     pub rate: f32,
     pub notes: Option<String>,
+    pub customer_group: CustomerGroup,
     pub next_action: NextAction,
     pub latest_track_time: Option<chrono::DateTime<chrono::Utc>>,
     pub latest_next_action: Option<NextAction>,
@@ -68,6 +71,7 @@ pub struct CustomerDetailResponse {
     pub address: Option<String>,
     pub notes: Option<String>,
     pub rate: f32,
+    pub customer_group: CustomerGroup,
     pub user_id: i32,
     pub next_action: NextAction,
     pub track_count: i64,
@@ -82,35 +86,29 @@ pub async fn list_customers(
     Query(params): Query<CustomerListQuery>,
     State(app_state): State<AppState>,
 ) -> Result<Json<CustomerListResponse>, StatusCode> {
-    let mut query = Customer::find()
+    // 第一步：获取所有符合基本条件的客户
+    let mut base_query = Customer::find()
         .filter(customer::Column::UserId.eq(current_user.id))
         .filter(customer::Column::IsDeleted.eq(false));
 
-    // Add search filter if provided
+    // 添加基本搜索过滤
     if let Some(search_term) = &params.search {
-        query = query.filter(
+        base_query = base_query.filter(
             customer::Column::Name.contains(search_term)
                 .or(customer::Column::Phone.contains(search_term))
         );
     }
 
-    let paginator = query
+    // 获取所有符合基本条件的客户
+    let all_customers = base_query
         .order_by_desc(customer::Column::UpdatedAt)
-        .paginate(&app_state.db, params.limit);
-
-    let customers_page = paginator
-        .fetch_page(params.page - 1)
+        .all(&app_state.db)
         .await
         .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
-    let total = paginator
-        .num_items()
-        .await
-        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
-
-    // 获取每个客户的跟进信息
+    // 第二步：获取每个客户的跟进信息并进行状态筛选
     let mut customer_with_tracks = Vec::new();
-    for customer in customers_page {
+    for customer in all_customers {
         // 查询该客户的最新跟进记录
         let latest_track = CustomerTrack::find()
             .filter(customer_track::Column::CustomerId.eq(customer.id))
@@ -118,6 +116,16 @@ pub async fn list_customers(
             .one(&app_state.db)
             .await
             .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+
+        // 确定客户的当前状态
+        let current_status = latest_track.as_ref().map(|t| t.next_action.clone()).unwrap_or(NextAction::Continue);
+        
+        // 如果有状态筛选条件，检查是否匹配
+        if let Some(filter_status) = &params.status {
+            if current_status != *filter_status {
+                continue; // 跳过不匹配的客户
+            }
+        }
 
         // 查询该客户的跟进记录总数
         let track_count = CustomerTrack::find()
@@ -133,7 +141,8 @@ pub async fn list_customers(
             address: customer.address,
             rate: customer.rate,
             notes: customer.notes,
-            next_action: latest_track.as_ref().map(|t| t.next_action.clone()).unwrap_or(NextAction::Continue),
+            customer_group: customer.customer_group,
+            next_action: current_status,
             latest_track_time: latest_track.as_ref().map(|t| t.track_time),
             latest_next_action: latest_track.as_ref().map(|t| t.next_action.clone()),
             latest_content: latest_track.as_ref().map(|t| t.content.clone()),
@@ -145,8 +154,19 @@ pub async fn list_customers(
         });
     }
 
+    // 第三步：手动分页
+    let total = customer_with_tracks.len() as u64;
+    let start_index = ((params.page - 1) * params.limit) as usize;
+    let end_index = std::cmp::min(start_index + params.limit as usize, customer_with_tracks.len());
+    
+    let paginated_customers = if start_index < customer_with_tracks.len() {
+        customer_with_tracks[start_index..end_index].to_vec()
+    } else {
+        Vec::new()
+    };
+
     Ok(Json(CustomerListResponse {
-        customers: customer_with_tracks,
+        customers: paginated_customers,
         total,
         page: params.page,
         limit: params.limit,
@@ -194,6 +214,7 @@ pub async fn get_customer(
         address: customer.address,
         notes: customer.notes,
         rate: customer.rate,
+        customer_group: customer.customer_group,
         user_id: customer.user_id,
         next_action,
         track_count: track_count as i64,
@@ -219,6 +240,7 @@ pub async fn create_customer(
         address: Set(req.address),
         notes: Set(req.notes),
         rate: Set(req.rate.unwrap_or(0.0)),
+        customer_group: Set(req.customer_group.unwrap_or(CustomerGroup::GroupClass)),
         user_id: Set(current_user.id), // Automatically associate with current user
         created_at: Set(now),
         updated_at: Set(now),
@@ -266,6 +288,9 @@ pub async fn update_customer(
     }
     if let Some(rate) = req.rate {
         customer_active.rate = Set(rate);
+    }
+    if let Some(customer_group) = req.customer_group {
+        customer_active.customer_group = Set(customer_group);
     }
     
     customer_active.updated_at = Set(Utc::now());

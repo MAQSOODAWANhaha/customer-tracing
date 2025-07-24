@@ -41,6 +41,14 @@
           />
         </n-form-item-gi>
         
+        <n-form-item-gi :span="12" label="客户分组" path="customer_group">
+          <n-select
+            v-model:value="formData.customer_group"
+            placeholder="请选择客户分组"
+            :options="customerGroupOptions"
+          />
+        </n-form-item-gi>
+        
         <n-form-item-gi :span="12" label="客户评级" path="rate">
           <n-rate
             v-model:value="formData.rate"
@@ -97,7 +105,7 @@
 import { ref, reactive, computed, watch } from 'vue'
 import { useMessage, type FormInst, type FormRules } from 'naive-ui'
 import { useCustomerStore } from '@/stores/customer'
-import type { Customer, CustomerCreateRequest, CustomerUpdateRequest } from '@/types'
+import type { Customer, CustomerCreateRequest, CustomerUpdateRequest, CustomerGroup } from '@/types'
 
 interface Props {
   show: boolean
@@ -124,8 +132,17 @@ const formData = reactive<CustomerCreateRequest & { id?: number }>({
   phone: '',
   address: '',
   notes: '',
-  rate: 0
+  rate: 0,
+  customer_group: '团课' as CustomerGroup
 })
+
+// 客户分组选项
+const customerGroupOptions = [
+  { label: '团课', value: '团课' as CustomerGroup },
+  { label: '小班', value: '小班' as CustomerGroup },
+  { label: '私教', value: '私教' as CustomerGroup },
+  { label: '教培', value: '教培' as CustomerGroup }
+]
 
 // 计算属性
 const showModal = computed({
@@ -156,6 +173,9 @@ const formRules: FormRules = {
   ],
   rate: [
     { type: 'number', min: 0, max: 5, message: '评级必须在 0-5 之间', trigger: ['change', 'blur'] }
+  ],
+  customer_group: [
+    { required: true, message: '请选择客户分组', trigger: ['change', 'blur'] }
   ]
 }
 
@@ -166,6 +186,7 @@ const resetForm = () => {
   formData.address = ''
   formData.notes = ''
   formData.rate = 0
+  formData.customer_group = '团课'
   delete formData.id
 }
 
@@ -177,6 +198,7 @@ const loadCustomerData = (customer: Customer) => {
   formData.address = customer.address || ''
   formData.notes = customer.notes || ''
   formData.rate = customer.rate || 0
+  formData.customer_group = customer.customer_group || '团课'
 }
 
 // 处理提交
@@ -194,7 +216,8 @@ const handleSubmit = async () => {
         phone: formData.phone || null,
         address: formData.address || null,
         notes: formData.notes || null,
-        rate: formData.rate
+        rate: formData.rate,
+        customer_group: formData.customer_group
       }
       await customerStore.updateCustomer(formData.id, updateData)
       message.success('客户信息更新成功')
@@ -205,7 +228,8 @@ const handleSubmit = async () => {
         phone: formData.phone || null,
         address: formData.address || null,
         notes: formData.notes || null,
-        rate: formData.rate
+        rate: formData.rate,
+        customer_group: formData.customer_group
       }
       await customerStore.createCustomer(createData)
       message.success('客户创建成功')
