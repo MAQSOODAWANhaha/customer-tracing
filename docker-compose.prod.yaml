@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # 后端服务
   backend:
@@ -35,7 +33,7 @@ services:
           memory: 256M
           cpus: '0.25'
 
-  # 前端服务
+  # 前端服务 (包含nginx)
   frontend:
     build:
       context: ./frontend
@@ -45,6 +43,8 @@ services:
         - VITE_TOKEN_STORAGE_KEY=${VITE_TOKEN_STORAGE_KEY:-customer_tracker_token}
     container_name: customer-tracker-frontend-prod
     restart: always
+    ports:
+      - "80:80"
     depends_on:
       backend:
         condition: service_healthy
@@ -59,35 +59,11 @@ services:
     deploy:
       resources:
         limits:
+          memory: 256M
+          cpus: '0.5'
+        reservations:
           memory: 128M
           cpus: '0.25'
-        reservations:
-          memory: 64M
-          cpus: '0.1'
-
-  # Nginx 反向代理 (生产环境)
-  nginx:
-    image: docker.m.daocloud.io/nginx:alpine
-    container_name: customer-tracker-nginx-prod
-    restart: always
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./nginx/conf.d:/etc/nginx/conf.d:ro
-      - ./ssl:/etc/nginx/ssl:ro
-      - ./logs/nginx:/var/log/nginx
-    depends_on:
-      - frontend
-      - backend
-    networks:
-      - customer-tracker-network
-    healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
 
 # 持久化存储
 volumes:
