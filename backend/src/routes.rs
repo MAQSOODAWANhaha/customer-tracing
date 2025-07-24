@@ -63,23 +63,12 @@ pub fn create_routes(app_state: AppState) -> Router {
         .fallback_service(ServeDir::new("dist")) // Serve static files
 }
 
-fn create_cors_layer(app_state: &AppState) -> CorsLayer {
-    let cors_origin = &app_state.config.cors_origin;
-    
-    if cors_origin == "*" {
-        // Allow all origins
-        CorsLayer::new()
-            .allow_origin(Any)
-            .allow_methods(Any)
-            .allow_headers(Any)
-    } else {
-        // Allow specific origin
-        use tower_http::cors::AllowOrigin;
-        CorsLayer::new()
-            .allow_origin(cors_origin.parse::<AllowOrigin>().unwrap_or(Any))
-            .allow_methods(Any)
-            .allow_headers(Any)
-    }
+fn create_cors_layer(_app_state: &AppState) -> CorsLayer {
+    // 极简模式：默认允许所有来源，简化部署配置
+    CorsLayer::new()
+        .allow_origin(Any)
+        .allow_methods(Any)
+        .allow_headers(Any)
 }
 
 async fn health_check() -> &'static str {
