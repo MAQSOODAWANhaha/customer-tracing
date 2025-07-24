@@ -51,6 +51,7 @@ pub struct CustomerWithLatestTrack {
     pub latest_track_time: Option<chrono::DateTime<chrono::Utc>>,
     pub latest_next_action: Option<NextAction>,
     pub latest_content: Option<String>,
+    pub track_count: i64,
     pub created_at: chrono::DateTime<chrono::Utc>,
 }
 
@@ -102,22 +103,37 @@ pub async fn list_customers(
         .await
         .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
-    // For now, return customers without latest track info
-    // In a production app, you'd want to optimize this with a JOIN query
-    let customer_with_tracks = customers_page
-        .into_iter()
-        .map(|customer| CustomerWithLatestTrack {
+    // 获取每个客户的跟进信息
+    let mut customer_with_tracks = Vec::new();
+    for customer in customers_page {
+        // 查询该客户的最新跟进记录
+        let latest_track = CustomerTrack::find()
+            .filter(customer_track::Column::CustomerId.eq(customer.id))
+            .order_by_desc(customer_track::Column::TrackTime)
+            .one(&app_state.db)
+            .await
+            .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+
+        // 查询该客户的跟进记录总数
+        let track_count = CustomerTrack::find()
+            .filter(customer_track::Column::CustomerId.eq(customer.id))
+            .count(&app_state.db)
+            .await
+            .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+
+        customer_with_tracks.push(CustomerWithLatestTrack {
             id: customer.id,
             name: customer.name,
             phone: customer.phone,
             rate: customer.rate,
             notes: customer.notes,
-            latest_track_time: None, // TODO: Optimize with JOIN
-            latest_next_action: None,
-            latest_content: None,
+            latest_track_time: latest_track.as_ref().map(|t| t.track_time),
+            latest_next_action: latest_track.as_ref().map(|t| t.next_action.clone()),
+            latest_content: latest_track.as_ref().map(|t| t.content.clone()),
+            track_count: track_count as i64,
             created_at: customer.created_at,
-        })
-        .collect();
+        });
+    }
 
     Ok(Json(CustomerListResponse {
         customers: customer_with_tracks,

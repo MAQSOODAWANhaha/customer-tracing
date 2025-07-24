@@ -139,6 +139,7 @@
           <!-- 跟进记录时间线 -->
           <n-gi :span="24" :lg="16">
             <tracking-timeline 
+              ref="timelineRef"
               :customer-id="customerId" 
               @refresh="handleRefreshCustomer"
               @add-track="showTrackModal = true"
@@ -206,6 +207,7 @@ const customerStore = useCustomerStore()
 const loading = ref(false)
 const showEditModal = ref(false)
 const showTrackModal = ref(false)
+const timelineRef = ref<{ loadTracks: () => void; handleRefresh: () => void } | null>(null)
 
 // 计算属性
 const customerId = computed(() => Number(route.params.id))
@@ -279,6 +281,10 @@ const handleEditSuccess = () => {
 const handleTrackSuccess = () => {
   showTrackModal.value = false
   loadCustomer()
+  // 刷新跟进记录列表
+  if (timelineRef.value) {
+    timelineRef.value.loadTracks()
+  }
   message.success('跟进记录添加成功')
 }
 

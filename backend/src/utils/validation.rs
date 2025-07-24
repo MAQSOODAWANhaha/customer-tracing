@@ -28,6 +28,6 @@ pub fn validate_phone(phone: &str) -> bool {
     re.is_match(phone)
 }
 
-pub fn validate_rate(rate: i32) -> bool {
-    (0..=5).contains(&rate)
+pub fn validate_rate(rate: f32) -> bool {
+    rate >= 0.0 && rate <= 5.0
 }
