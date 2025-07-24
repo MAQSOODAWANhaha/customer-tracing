@@ -230,13 +230,13 @@ pub async fn update_customer(
         customer_active.name = Set(name);
     }
     if let Some(phone) = req.phone {
-        customer_active.phone = Set(Some(phone));
+        customer_active.phone = Set(if phone.is_empty() { None } else { Some(phone) });
     }
     if let Some(address) = req.address {
-        customer_active.address = Set(Some(address));
+        customer_active.address = Set(if address.is_empty() { None } else { Some(address) });
     }
     if let Some(notes) = req.notes {
-        customer_active.notes = Set(Some(notes));
+        customer_active.notes = Set(if notes.is_empty() { None } else { Some(notes) });
     }
     if let Some(rate) = req.rate {
         customer_active.rate = Set(rate);
