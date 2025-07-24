@@ -36,36 +36,51 @@
 
     <!-- 搜索和筛选 -->
     <n-card class="filter-card" :bordered="false">
-      <n-space align="center" justify="space-between">
-        <n-space align="center">
+      <div class="filter-content">
+        <!-- 搜索栏 -->
+        <div class="search-section">
           <n-input
             v-model:value="searchQuery"
             placeholder="搜索客户姓名、手机号..."
             clearable
-            style="width: 240px"
+            class="search-input"
             @input="handleSearch"
           >
             <template #prefix>
               <n-icon :component="SearchOutline" />
             </template>
           </n-input>
-          
-          <n-select
-            v-model:value="statusFilter"
-            placeholder="筛选状态"
-            clearable
-            style="width: 160px"
-            :options="statusOptions"
-            @update:value="handleFilterChange"
-          />
-        </n-space>
+        </div>
         
-        <n-space align="center">
-          <n-text depth="3">
-            共 {{ totalCount }} 位客户
-          </n-text>
-        </n-space>
-      </n-space>
+        <!-- 筛选和统计区域 -->
+        <div class="filter-section">
+          <div class="filter-controls">
+            <n-select
+              v-model:value="statusFilter"
+              placeholder="筛选状态"
+              clearable
+              class="filter-select"
+              :options="statusOptions"
+              @update:value="handleFilterChange"
+            />
+
+            <n-select
+              v-model:value="groupFilter"
+              placeholder="客户分组"
+              clearable
+              class="filter-select"
+              :options="groupOptions"
+              @update:value="handleFilterChange"
+            />
+          </div>
+          
+          <div class="stats-section">
+            <n-text depth="3" class="stats-text">
+              共 {{ totalCount }} 位客户
+            </n-text>
+          </div>
+        </div>
+      </div>
     </n-card>
 
     <!-- 客户列表 -->
@@ -167,7 +182,7 @@ import { useAuthStore } from '@/stores/auth'
 import { useCustomerStore } from '@/stores/customer'
 import CustomerCard from '@/components/CustomerCard.vue'
 import CustomerFormModal from '@/components/CustomerFormModal.vue'
-import type { Customer, NextAction } from '@/types'
+import type { Customer, NextAction, CustomerGroup } from '@/types'
 
 const router = useRouter()
 const message = useMessage()
@@ -178,6 +193,7 @@ const customerStore = useCustomerStore()
 const loading = ref(false)
 const searchQuery = ref('')
 const statusFilter = ref<NextAction | null>(null)
+const groupFilter = ref<CustomerGroup | null>(null)
 const currentPage = ref(1)
 const pageSize = ref(20)
 
@@ -198,6 +214,14 @@ const statusOptions = [
   { label: '结束跟进', value: '结束跟进' as NextAction }
 ]
 
+// 分组选项
+const groupOptions = [
+  { label: '团课', value: '团课' as CustomerGroup },
+  { label: '小班', value: '小班' as CustomerGroup },
+  { label: '私教', value: '私教' as CustomerGroup },
+  { label: '教培', value: '教培' as CustomerGroup }
+]
+
 // 搜索防抖
 let searchTimeout: NodeJS.Timeout | null = null
 
@@ -209,7 +233,8 @@ const loadCustomers = async () => {
       page: currentPage.value,
       limit: pageSize.value,
       search: searchQuery.value || undefined,
-      status: statusFilter.value || undefined
+      status: statusFilter.value || undefined,
+      customer_group: groupFilter.value || undefined
     })
   } catch (error: any) {
     message.error(error.message || '加载客户列表失败')
@@ -342,6 +367,48 @@ onMounted(() => {
   margin-bottom: 16px;
 }
 
+.filter-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.search-section {
+  width: 100%;
+}
+
+.search-input {
+  width: 100%;
+  max-width: 400px;
+}
+
+.filter-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.filter-controls {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.filter-select {
+  width: 140px;
+  min-width: 120px;
+}
+
+.stats-section {
+  flex-shrink: 0;
+}
+
+.stats-text {
+  font-size: 14px;
+  white-space: nowrap;
+}
+
 .list-card {
   margin-bottom: 16px;
   min-height: 400px;
@@ -366,6 +433,24 @@ onMounted(() => {
   padding: 20px 0;
 }
 
+/* 平板响应式 */
+@media (max-width: 1024px) {
+  .filter-section {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  
+  .filter-controls {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+  
+  .stats-section {
+    align-self: center;
+  }
+}
+
 /* 移动端响应式 */
 @media (max-width: 768px) {
   .customer-list-container {
@@ -376,6 +461,37 @@ onMounted(() => {
     flex-direction: column;
     align-items: flex-start;
     gap: 16px;
+  }
+  
+  .filter-content {
+    gap: 12px;
+  }
+  
+  .search-input {
+    max-width: none;
+  }
+  
+  .filter-section {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  
+  .filter-controls {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  
+  .filter-select {
+    width: 100%;
+    min-width: unset;
+  }
+  
+  .stats-section {
+    text-align: center;
+    padding: 8px 0;
+    border-top: 1px solid #f0f0f0;
   }
   
   .customer-grid {
@@ -390,6 +506,19 @@ onMounted(() => {
   
   .header-info h1 {
     font-size: 20px;
+  }
+  
+  .filter-content {
+    gap: 8px;
+  }
+  
+  .filter-controls {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+  
+  .stats-text {
+    font-size: 13px;
   }
 }
 </style>

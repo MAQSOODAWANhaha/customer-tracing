@@ -8,6 +8,7 @@ import type {
   CustomerUpdateRequest,
   CustomerListResponse,
   NextAction,
+  CustomerGroup,
   ApiError
 } from '@/types'
 
@@ -16,6 +17,7 @@ interface CustomerFilters {
   limit?: number
   search?: string
   status?: NextAction
+  customer_group?: CustomerGroup
 }
 
 export const useCustomerStore = defineStore('customer', () => {
@@ -34,6 +36,7 @@ export const useCustomerStore = defineStore('customer', () => {
       if (filters.limit) params.append('limit', filters.limit.toString())
       if (filters.search) params.append('search', filters.search)
       if (filters.status) params.append('status', filters.status)
+      if (filters.customer_group) params.append('customer_group', filters.customer_group)
       
       const response = await request.get<CustomerListResponse>(
         `/api/customers?${params.toString()}`

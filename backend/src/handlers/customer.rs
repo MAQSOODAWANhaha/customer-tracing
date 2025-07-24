@@ -30,6 +30,7 @@ pub struct CustomerListQuery {
     pub limit: u64,
     pub search: Option<String>,
     pub status: Option<NextAction>,
+    pub customer_group: Option<CustomerGroup>,
 }
 
 fn default_page() -> u64 { 1 }
