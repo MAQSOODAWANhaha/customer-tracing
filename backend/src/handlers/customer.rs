@@ -133,11 +133,15 @@ pub async fn list_customers(
             address: customer.address,
             rate: customer.rate,
             notes: customer.notes,
+            next_action: latest_track.as_ref().map(|t| t.next_action.clone()).unwrap_or(NextAction::Continue),
             latest_track_time: latest_track.as_ref().map(|t| t.track_time),
             latest_next_action: latest_track.as_ref().map(|t| t.next_action.clone()),
             latest_content: latest_track.as_ref().map(|t| t.content.clone()),
             track_count: track_count as i64,
+            user_id: customer.user_id,
             created_at: customer.created_at,
+            updated_at: customer.updated_at,
+            is_deleted: customer.is_deleted,
         });
     }
 
