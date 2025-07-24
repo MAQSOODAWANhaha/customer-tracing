@@ -10,7 +10,7 @@ import type {
   ApiError 
 } from '@/types'
 
-const TOKEN_KEY = import.meta.env.VITE_TOKEN_STORAGE_KEY || 'customer_tracker_token'
+const TOKEN_KEY = 'customer_tracker_token'
 
 export const useAuthStore = defineStore('auth', () => {
   const token = ref<string | null>(localStorage.getItem(TOKEN_KEY))

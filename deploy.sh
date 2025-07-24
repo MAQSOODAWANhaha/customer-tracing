@@ -169,41 +169,18 @@ generate_env_config() {
     print_info "生成安全的JWT密钥..."
     JWT_SECRET=$(openssl rand -base64 64 | tr -d '\n')
     
-    # 确定API基础URL - 前端使用相对路径，后端CORS使用完整地址
-    VITE_API_BASE_URL="/api"  # 前端总是使用相对路径
-    if [ "$DOMAIN" = "localhost" ]; then
-        CORS_ORIGIN="http://localhost"
-    else
-        CORS_ORIGIN="${PROTOCOL}://${DOMAIN}"
-    fi
-    
-    # 创建生产环境配置文件
+    # 创建简化的生产环境配置文件
     cat > .env << EOF
-# 自动生成的环境配置文件
+# 客户追踪系统 - 极简配置
 # 生成时间: $(date)
 # 部署地址: ${PROTOCOL}://${DOMAIN}
 
-# JWT 配置
+# 唯一必需的安全配置
 JWT_SECRET=${JWT_SECRET}
-JWT_EXPIRE_HOURS=24
-
-# 后端配置
-RUST_LOG=warn
-CORS_ORIGIN=${CORS_ORIGIN}
-
-# 前端配置
-VITE_API_BASE_URL=${VITE_API_BASE_URL}
-VITE_TOKEN_STORAGE_KEY=customer_tracker_token
-
-# 部署配置
-PUBLIC_IP=${PUBLIC_IP}
-DOMAIN=${DOMAIN}
-PROTOCOL=${PROTOCOL}
 EOF
     
-    print_success "环境变量配置已生成"
-    print_info "API地址: ${VITE_API_BASE_URL}"
-    print_info "CORS源: ${CORS_ORIGIN}"
+    print_success "环境变量配置已生成 (极简模式)"
+    print_info "访问地址: ${PROTOCOL}://${DOMAIN}"
 }
 
 # 初始化数据库和默认用户

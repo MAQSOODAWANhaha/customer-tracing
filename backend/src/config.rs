@@ -32,7 +32,7 @@ impl Config {
                 .parse()
                 .unwrap_or(3000),
             cors_origin: env::var("CORS_ORIGIN")
-                .unwrap_or_else(|_| "http://localhost:5173".to_string()),
+                .unwrap_or_else(|_| "*".to_string()),
             log_level: env::var("LOG_LEVEL")
                 .unwrap_or_else(|_| "info".to_string()),
         })

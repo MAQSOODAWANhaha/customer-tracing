@@ -54,7 +54,7 @@ router.beforeEach(async (to, _from, next) => {
 
   // Update document title
   if (to.meta.title) {
-    document.title = `${to.meta.title} - ${import.meta.env.VITE_APP_TITLE || '客户追踪系统'}`
+    document.title = `${to.meta.title} - 客户追踪系统`
   }
 
   // Check if route requires authentication

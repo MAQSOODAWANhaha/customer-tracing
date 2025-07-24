@@ -2,7 +2,7 @@ import axios, { type AxiosResponse, type AxiosError, type InternalAxiosRequestCo
 import type { ApiError } from '@/types'
 
 const request = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000',
+  baseURL: '',
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
@@ -12,7 +12,7 @@ const request = axios.create({
 // Request interceptor - add auth token
 request.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    const token = localStorage.getItem(import.meta.env.VITE_TOKEN_STORAGE_KEY || 'customer_tracker_token')
+    const token = localStorage.getItem('customer_tracker_token')
     
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`
@@ -45,7 +45,7 @@ request.interceptors.response.use(
           // Token expired or invalid
           apiError.message = '登录已过期，请重新登录'
           // Clear token and redirect to login
-          localStorage.removeItem(import.meta.env.VITE_TOKEN_STORAGE_KEY || 'customer_tracker_token')
+          localStorage.removeItem('customer_tracker_token')
           // Don't redirect here as it might cause infinite loops
           // Let the route guard handle redirection
           break

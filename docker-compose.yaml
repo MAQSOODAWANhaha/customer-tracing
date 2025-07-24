@@ -1,25 +1,20 @@
-version: '3.8'
-
 services:
   # 后端服务
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: customer-tracker-backend
+    container_name: customer-tracker-backend-dev
     restart: unless-stopped
     environment:
       - DATABASE_URL=sqlite:///app/data/customer_tracker.db
       - JWT_SECRET=${JWT_SECRET:-your-super-secret-jwt-key-here-change-in-production-min-256-bits}
-      - JWT_EXPIRE_HOURS=24
       - SERVER_HOST=0.0.0.0
       - SERVER_PORT=3000
-      - RUST_LOG=info
-      - CORS_ORIGIN=http://localhost
     volumes:
       - backend_data:/app/data
     ports:
-      - "3000:3000"
+      - "3000:3000"  # 开发环境保留后端端口用于直接访问
     networks:
       - customer-tracker-network
     healthcheck:
@@ -29,14 +24,13 @@ services:
       retries: 3
       start_period: 30s
 
-  # 前端服务
+  # 前端服务 (包含nginx)
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-      args:
-        - VITE_API_BASE_URL=/api
-    container_name: customer-tracker-frontend
+      # 前端不再需要构建时环境变量
+    container_name: customer-tracker-frontend-dev
     restart: unless-stopped
     ports:
       - "80:80"
@@ -56,15 +50,8 @@ services:
 volumes:
   backend_data:
     driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: ./data
 
 # 网络配置
 networks:
   customer-tracker-network:
     driver: bridge
-    ipam:
-      config:
-        - subnet: 172.20.0.0/16

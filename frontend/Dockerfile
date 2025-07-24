@@ -16,11 +16,7 @@ RUN npm ci
 # 复制源代码
 COPY . .
 
-# 设置构建时的环境变量
-ARG VITE_API_BASE_URL=/api
-ARG VITE_TOKEN_STORAGE_KEY=customer_tracker_token
-ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
-ENV VITE_TOKEN_STORAGE_KEY=$VITE_TOKEN_STORAGE_KEY
+# 环境变量已硬编码到源代码中，无需构建时配置
 
 # 构建应用
 RUN npm run build
