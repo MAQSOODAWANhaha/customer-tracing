@@ -11,7 +11,7 @@ pub struct Model {
     pub phone: Option<String>,
     pub address: Option<String>,
     pub notes: Option<String>,
-    pub rate: i32,
+    pub rate: f32,
     pub user_id: i32,
     pub created_at: ChronoDateTimeUtc,
     pub updated_at: ChronoDateTimeUtc,
@@ -49,7 +49,7 @@ pub struct CustomerWithLatestTrack {
     pub id: i32,
     pub name: String,
     pub phone: Option<String>,
-    pub rate: i32,
+    pub rate: f32,
     pub notes: Option<String>,
     pub latest_track_time: Option<ChronoDateTimeUtc>,
     pub latest_next_action: Option<NextAction>,
@@ -63,7 +63,7 @@ pub struct CreateCustomerRequest {
     pub phone: Option<String>,
     pub address: Option<String>,
     pub notes: Option<String>,
-    pub rate: Option<i32>,
+    pub rate: Option<f32>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -72,5 +72,5 @@ pub struct UpdateCustomerRequest {
     pub phone: Option<String>,
     pub address: Option<String>,
     pub notes: Option<String>,
-    pub rate: Option<i32>,
+    pub rate: Option<f32>,
 }

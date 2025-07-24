@@ -5,7 +5,7 @@ CREATE TABLE customers (
     phone VARCHAR(20),
     address TEXT,
     notes TEXT,
-    rate INTEGER DEFAULT 0 CHECK(rate >= 0 AND rate <= 5),
+    rate REAL DEFAULT 0.0 CHECK(rate >= 0.0 AND rate <= 5.0),
     user_id INTEGER NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

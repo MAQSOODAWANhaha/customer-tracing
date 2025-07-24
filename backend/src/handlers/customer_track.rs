@@ -54,7 +54,7 @@ pub struct CustomerInfo {
     pub id: i32,
     pub name: String,
     pub phone: Option<String>,
-    pub rate: i32,
+    pub rate: f32,
 }
 
 impl From<customer::Model> for CustomerInfo {
