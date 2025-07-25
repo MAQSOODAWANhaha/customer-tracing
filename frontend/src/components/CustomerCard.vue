@@ -8,13 +8,24 @@
       <div class="card-header">
         <div class="customer-info">
           <n-text class="customer-name">{{ customer.name }}</n-text>
-          <n-tag 
-            :type="getStatusTagType(customer.next_action)" 
-            size="small"
-            round
-          >
-            {{ customer.next_action }}
-          </n-tag>
+          <div class="status-tags">
+            <n-tag 
+              size="small" 
+              :type="getGroupTagType(customer.customer_group)"
+              round
+              class="group-tag"
+            >
+              {{ customer.customer_group }}
+            </n-tag>
+            <n-tag 
+              :type="getStatusTagType(customer.next_action)" 
+              size="small"
+              round
+              class="status-tag"
+            >
+              {{ customer.next_action }}
+            </n-tag>
+          </div>
         </div>
         <n-dropdown
           trigger="click"
@@ -60,16 +71,6 @@
           </n-text>
         </div>
         
-        <div class="info-item">
-          <n-icon :component="PersonOutline" size="14" />
-          <n-tag 
-            size="small" 
-            :type="getGroupTagType(customer.customer_group)"
-            round
-          >
-            {{ customer.customer_group }}
-          </n-tag>
-        </div>
         
         <div class="info-item" v-if="customer.address">
           <n-icon :component="LocationOutline" size="14" />
@@ -160,7 +161,6 @@ import {
   CallOutline,
   StarOutline,
   LocationOutline,
-  PersonOutline,
   AddCircleOutline,
   CreateOutline,
   EyeOutline,
@@ -315,15 +315,35 @@ const formatDate = (dateString: string) => {
 .customer-info {
   flex: 1;
   min-width: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
 }
 
 .customer-name {
   font-size: 16px;
   font-weight: 600;
   color: #333;
-  display: block;
-  margin-bottom: 4px;
+  flex: 1;
+  min-width: 0;
   word-break: break-word;
+  line-height: 1.3;
+}
+
+.status-tags {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.group-tag {
+  font-weight: 500;
+}
+
+.status-tag {
+  font-weight: 500;
 }
 
 .card-content {
@@ -395,6 +415,37 @@ const formatDate = (dateString: string) => {
   background: linear-gradient(135deg, #f6f8fa 0%, #f1f3f4 100%);
   border-radius: 8px;
   border-left: 3px solid #52c41a;
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+  .customer-info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .status-tags {
+    align-self: flex-end;
+    gap: 4px;
+  }
+  
+  .customer-name {
+    margin-bottom: 4px;
+  }
+}
+
+@media (max-width: 480px) {
+  .status-tags {
+    flex-direction: column;
+    gap: 3px;
+    align-items: flex-end;
+  }
+  
+  .group-tag,
+  .status-tag {
+    font-size: 11px;
+  }
 }
 
 .last-track-info {

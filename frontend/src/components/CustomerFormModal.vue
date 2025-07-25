@@ -50,15 +50,18 @@
         </n-form-item-gi>
         
         <n-form-item-gi :span="12" label="客户评级" path="rate">
-          <n-rate
-            v-model:value="formData.rate"
-            :max="5"
-            allow-half
-            clearable
-          />
-          <n-text depth="3" style="font-size: 12px; margin-left: 8px;">
-            {{ formData.rate || 0 }}/5
-          </n-text>
+          <div class="rate-container">
+            <n-rate
+              v-model:value="formData.rate"
+              :max="5"
+              allow-half
+              clearable
+              class="rate-stars"
+            />
+            <n-text depth="3" class="rate-text">
+              {{ formData.rate || 0 }}/5
+            </n-text>
+          </div>
         </n-form-item-gi>
         
         <n-form-item-gi :span="24" label="联系地址" path="address">
@@ -294,6 +297,21 @@ watch(
   padding: 16px 24px 20px 24px;
 }
 
+/* 评级容器样式 */
+.rate-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: nowrap;
+}
+
+.rate-text {
+  font-size: 12px;
+  color: #666;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
 /* 平板适配 */
 @media (max-width: 1024px) {
   .customer-form-modal {
@@ -344,6 +362,20 @@ watch(
   .customer-form-modal :deep(.n-form-item-gi) {
     width: 100% !important;
     margin-bottom: 20px;
+  }
+
+  /* 移动端评级优化 */
+  .rate-container {
+    justify-content: flex-start;
+    gap: 12px;
+  }
+
+  .rate-stars :deep(.n-rate) {
+    font-size: 18px;
+  }
+
+  .rate-text {
+    font-size: 14px;
   }
 
   /* 移动端按钮优化 */
