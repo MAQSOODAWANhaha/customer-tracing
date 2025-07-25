@@ -118,15 +118,28 @@ pub async fn list_customers(
             .await
             .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
-        // 确定客户的当前状态
-        let current_status = latest_track.as_ref().map(|t| t.next_action.clone()).unwrap_or(NextAction::Continue);
-        
         // 如果有状态筛选条件，检查是否匹配
         if let Some(filter_status) = &params.status {
-            if current_status != *filter_status {
+            // 状态筛选时，只包含有跟进记录的客户
+            if let Some(track) = &latest_track {
+                if track.next_action != *filter_status {
+                    continue; // 跳过状态不匹配的客户
+                }
+            } else {
+                // 没有跟进记录的客户在状态筛选时被过滤掉
+                continue;
+            }
+        }
+
+        // 如果有分组筛选条件，检查是否匹配
+        if let Some(filter_group) = &params.customer_group {
+            if customer.customer_group != *filter_group {
                 continue; // 跳过不匹配的客户
             }
         }
+        
+        // 确定客户的当前状态（用于返回数据）
+        let current_status = latest_track.as_ref().map(|t| t.next_action.clone()).unwrap_or(NextAction::Continue);
 
         // 查询该客户的跟进记录总数
         let track_count = CustomerTrack::find()
